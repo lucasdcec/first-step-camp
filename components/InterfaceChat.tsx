@@ -10,7 +10,6 @@ interface InterfaceChatProps {
   aoVoltar?: () => void
 }
 
-// Respostas mockadas com escopo educacional
 const RESPOSTAS_IA = [
   {
     palavrasChave: ['céu', 'azul'],
