@@ -20,24 +20,29 @@ export default function FrameDispositivo({ children, aoApertarBotao }: FrameDisp
               {children}
             </div>
           </div>
-
-          {/* Botão físico de home — resposta imediata, área de toque generosa */}
+ {/* Botão físico de home — resposta imediata, área de toque generosa */}
           <button
             type="button"
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              aoApertarBotao?.()
-            }}
             onPointerDown={(e) => {
               e.currentTarget.classList.add('device-button-pressed')
             }}
             onPointerUp={(e) => {
               e.currentTarget.classList.remove('device-button-pressed')
+              if (e.pointerType === 'mouse' && e.button !== 0) return
+              e.preventDefault()
+              e.stopPropagation()
+              aoApertarBotao?.()
             }}
             onPointerLeave={(e) => {
               e.currentTarget.classList.remove('device-button-pressed')
             }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                aoApertarBotao?.()
+              }
+            }}
+            onClick={(e) => e.preventDefault()}
             className="device-button"
             aria-label="Voltar ao início"
             title="Voltar ao início"
