@@ -39,30 +39,32 @@ export default function Inicio() {
     }
   }, [tela])
 
-  const mudarTela = (novaTela: Tela) => {
-    setEmTransicao(true)
+  const mudarTela = (novaTela: Tela, imediato = false) => {
     setContagemBotao(0)
+    if (imediato) {
+      setTela(novaTela)
+      setEmTransicao(false)
+      return
+    }
+    setEmTransicao(true)
     setTimeout(() => {
       setTela(novaTela)
       setEmTransicao(false)
-    }, 200)
+    }, 150)
   }
 
   const aoApertarBotaoDispositivo = () => {
-    // Voltar para inicio de qualquer app
     if (tela !== 'inicio' && tela !== 'boot') {
-      mudarTela('inicio')
+      mudarTela('inicio', true)
     } else if (tela === 'inicio') {
-      // Contar cliques para abrir painel dos pais (easter egg)
       setContagemBotao(prev => {
         const novo = prev + 1
         if (novo >= 3) {
-          mudarTela('pais')
+          mudarTela('pais', true)
           return 0
         }
         return novo
       })
-      // Resetar contador após 2 segundos
       setTimeout(() => setContagemBotao(0), 2000)
     }
   }

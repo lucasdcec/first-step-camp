@@ -33,7 +33,7 @@ html.dark body {
   }
 
   .device-button {
-    @apply absolute bottom-4 left-1/2 transform -translate-x-1/2 w-12 h-12 rounded-full bg-gray-900 dark:bg-gray-600 shadow-lg hover:shadow-xl transition-shadow duration-300 cursor-pointer;
+    @apply absolute bottom-4 left-1/2 -translate-x-1/2 w-12 h-12 rounded-full bg-gray-900 dark:bg-gray-600 shadow-lg hover:shadow-xl transition-shadow duration-300 cursor-pointer z-10;
   }
 
   .fade-in-slow {
