@@ -129,15 +129,30 @@ export default function InterfaceChat({ aoVoltar }: InterfaceChatProps) {
     setInputValue('')
     setCarregando(true)
 
-    await new Promise(r => setTimeout(r, 900))
-
-    const resposta = obterRespostaIA(pergunta)
-    const msgIA: Mensagem = { tipo: 'ia', texto: resposta.resposta, curiosidade: resposta.curiosidade, sugestao: resposta.sugestao }
-    setMensagens(prev => [...prev, msgIA])
-    adicionarMensagem({ tipo: 'ia', texto: resposta.resposta })
-    setCarregando(false)
-
-    if (vozAtiva) falar(resposta.resposta)
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pergunta })
+      });
+      const respostaIA = await res.json();
+      
+      const msgIA: Mensagem = { 
+        tipo: 'ia', 
+        texto: respostaIA.resposta || 'Ops, tive um errinho!', 
+        curiosidade: respostaIA.curiosidade, 
+        sugestao: respostaIA.sugestao 
+      };
+      setMensagens(prev => [...prev, msgIA])
+      adicionarMensagem({ tipo: 'ia', texto: msgIA.texto })
+      if (vozAtiva) falar(msgIA.texto)
+    } catch(err) {
+      console.error(err)
+      const msgErro: Mensagem = { tipo: 'ia', texto: 'Desculpe, tive um problema de rede!' }
+      setMensagens(prev => [...prev, msgErro])
+    } finally {
+      setCarregando(false)
+    }
   }
 
   const toggleMicrofone = () => {
