@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import type { Viewport } from 'next'
 import { ThemeProvider } from '@/contexts/ThemeContext'
+import { PerfilProvider } from '@/contexts/PerfilContext'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -31,9 +32,11 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body className="bg-neutral-50 dark:bg-gray-900 min-h-screen transition-colors duration-300">
-        <ThemeProvider>
-          {children}
-        </ThemeProvider>
+        <PerfilProvider>
+          <ThemeProvider>
+            {children}
+          </ThemeProvider>
+        </PerfilProvider>
       </body>
     </html>
   )

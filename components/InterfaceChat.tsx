@@ -1,46 +1,72 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useHistoricoChat } from '@/hooks/useHistoricoChat'
 import { useTema } from '@/contexts/ThemeContext'
 import AvatarIA from './AvatarIA'
 
 interface InterfaceChatProps {
   aoExplorar?: () => void
+  aoVoltar?: () => void
 }
 
+// Respostas mockadas com escopo educacional
 const RESPOSTAS_IA = [
   {
-    pergunta: 'Por que o céu é azul?',
-    resposta: 'O céu fica azul porque a luz solar se dispersa na atmosfera. A luz azul tem ondas curtas e se espalha mais facilmente, por isso vemos o céu azul!',
-    curiosidade: 'Você sabia? Em Marte, o céu é na verdade marrom-dourado!',
-    sugestao: 'Quer aprender sobre arco-íris?'
+    palavrasChave: ['céu', 'azul'],
+    resposta: 'O céu fica azul porque a luz solar se dispersa na atmosfera. A luz azul tem ondas curtas e se espalha mais facilmente!',
+    curiosidade: '✨ Em Marte, o céu é marrom-dourado durante o dia.',
+    sugestao: 'Quer aprender sobre arco-íris?',
   },
   {
-    pergunta: 'Como os dinossauros existiam?',
-    resposta: 'Dinossauros viveram na Terra milhões de anos atrás, muito antes dos humanos. Eram répteis incríveis, alguns tão pequenos quanto galinhas e outros gigantescos!',
-    curiosidade: 'Você sabia? Alguns dinossauros tinham penas como pássaros!',
-    sugestao: 'Quer aprender sobre fósseis?'
+    palavrasChave: ['dinossauro', 'dinossauros'],
+    resposta: 'Dinossauros viveram há milhões de anos! Eram répteis incríveis — alguns tinham penas igual a pássaros.',
+    curiosidade: '✨ O T-Rex tinha braços pequenos mas mordia com muita força!',
+    sugestao: 'Quer saber sobre fósseis?',
   },
   {
-    pergunta: 'O que é o espaço?',
-    resposta: 'Espaço é tudo além da atmosfera da Terra. É vasto e contém estrelas, planetas, galáxias e muito que ainda estamos descobrindo. Nosso Sol é apenas uma estrela entre bilhões!',
-    curiosidade: 'Você sabia? Um dia em Vênus é mais longo que seu ano!',
-    sugestao: 'Quer explorar os planetas?'
+    palavrasChave: ['espaço', 'planeta', 'estrela', 'universo'],
+    resposta: 'O espaço é imenso e cheio de maravilhas! Nosso Sol é apenas uma estrela entre bilhões na Via Láctea.',
+    curiosidade: '✨ Um dia em Vênus dura mais do que um ano em Vênus!',
+    sugestao: 'Quer explorar os planetas?',
   },
   {
-    pergunta: 'Por que os oceanos existem?',
-    resposta: 'Oceanos são enormes corpos de água salgada que cobrem a maior parte da Terra. Foram formados há bilhões de anos e são lar de milhões de criaturas incríveis!',
-    curiosidade: 'Você sabia? O oceano é mais profundo que o Monte Everest é alto!',
-    sugestao: 'Quer aprender sobre animais marinhos?'
+    palavrasChave: ['oceano', 'mar', 'água'],
+    resposta: 'Os oceanos cobrem mais de 70% da Terra e são lar de criaturas fantásticas que ainda estamos descobrindo!',
+    curiosidade: '✨ O oceano é mais profundo que o Monte Everest é alto!',
+    sugestao: 'Quer aprender sobre animais marinhos?',
   },
   {
-    pergunta: 'O que são animais?',
-    resposta: 'Animais são criaturas vivas que respiram, comem e se movem. Existem milhões de tipos diferentes, desde insetos minúsculos até baleias gigantes!',
-    curiosidade: 'Você sabia? Uma borboleta sente o gosto com os pés!',
-    sugestao: 'Quer descobrir animais selvagens?'
-  }
+    palavrasChave: ['animal', 'animais', 'bicho'],
+    resposta: 'Existem milhões de espécies de animais! Desde insetos minúsculos até baleias gigantescas.',
+    curiosidade: '✨ Uma borboleta sente o gosto com os pés!',
+    sugestao: 'Quer descobrir animais selvagens?',
+  },
 ]
+
+const RESPOSTA_FORA_ESCOPO = {
+  resposta: 'Hmm, essa pergunta é melhor para os seus pais! 😊 Que tal conversar com eles sobre isso? Eu sou especialista em ciência, natureza e curiosidades da natureza!',
+  curiosidade: '✨ Sabia que aqui você pode aprender sobre espaço, dinossauros e muito mais?',
+  sugestao: 'Quer explorar tópicos de ciência?',
+}
+
+const RESPOSTA_PADRAO = {
+  resposta: 'Que pergunta interessante! Adoro curiosidade! 🧠 Posso te ajudar com ciência, natureza, animais, espaço e muito mais.',
+  curiosidade: '✨ A curiosidade é o primeiro passo para grandes descobertas!',
+  sugestao: 'Quer explorar tópicos incríveis?',
+}
+
+function obterRespostaIA(pergunta: string) {
+  const lower = pergunta.toLowerCase()
+  
+  // Verificar se é fora do escopo
+  const fora = ['namoro', 'violência', 'guerra', 'morte', 'política', 'religião', 'sexo', 'droga', 'álcool', 'cigarro']
+  if (fora.some(p => lower.includes(p))) return RESPOSTA_FORA_ESCOPO
+
+  // Tentar match por palavras-chave
+  const match = RESPOSTAS_IA.find(r => r.palavrasChave.some(p => lower.includes(p)))
+  return match ?? RESPOSTA_PADRAO
+}
 
 interface Mensagem {
   tipo: 'usuario' | 'ia'
@@ -49,138 +75,216 @@ interface Mensagem {
   sugestao?: string
 }
 
-export default function InterfaceChat({ aoExplorar }: InterfaceChatProps) {
+// Tipagem mínima para Web Speech API
+type SpeechRecognitionInstance = {
+  lang: string
+  interimResults: boolean
+  maxAlternatives: number
+  start: () => void
+  stop: () => void
+  onresult: ((e: any) => void) | null
+  onerror: ((e: any) => void) | null
+  onend: (() => void) | null
+}
+
+declare const webkitSpeechRecognition: new () => SpeechRecognitionInstance
+
+function falar(texto: string) {
+  if (typeof window === 'undefined' || !window.speechSynthesis) return
+  window.speechSynthesis.cancel()
+  const utter = new SpeechSynthesisUtterance(texto)
+  utter.lang = 'pt-BR'
+  utter.rate = 0.95
+  utter.pitch = 1.1
+  window.speechSynthesis.speak(utter)
+}
+
+const suporta_stt = typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)
+
+export default function InterfaceChat({ aoVoltar }: InterfaceChatProps) {
   const { historico, adicionarMensagem } = useHistoricoChat()
   const { temaEscuro } = useTema()
   const [mensagens, setMensagens] = useState<Mensagem[]>(
-    historico.length > 0 
+    historico.length > 0
       ? historico.map(m => ({ tipo: m.tipo, texto: m.texto })) as Mensagem[]
-      : [{ tipo: 'ia', texto: 'Olá! Sou seu assistente de aprendizado. Faça-me qualquer pergunta e vou mostrar fatos incríveis!' }]
+      : [{ tipo: 'ia', texto: 'Olá, explorador! 🚀 Sou o Primo, seu assistente de aprendizado. Faça uma pergunta sobre ciência, natureza ou curiosidades!' }]
   )
   const [inputValue, setInputValue] = useState('')
-  const [estáCarregando, setEstáCarregando] = useState(false)
+  const [carregando, setCarregando] = useState(false)
+  const [vozAtiva, setVozAtiva] = useState(false)
+  const [escutando, setEscutando] = useState(false)
+  const bottomRef = useRef<HTMLDivElement>(null)
+  const reconhecimentoRef = useRef<SpeechRecognitionInstance | null>(null)
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [mensagens, carregando])
 
   const aoEnviarMensagem = async (pergunta: string) => {
-    if (!pergunta.trim()) return
+    if (!pergunta.trim() || carregando) return
 
-    // Adicionar mensagem do usuário
-    const mensagemUsuario: Mensagem = { tipo: 'usuario', texto: pergunta }
-    setMensagens(prev => [...prev, mensagemUsuario])
+    const msgUser: Mensagem = { tipo: 'usuario', texto: pergunta }
+    setMensagens(prev => [...prev, msgUser])
     adicionarMensagem({ tipo: 'usuario', texto: pergunta })
     setInputValue('')
-    setEstáCarregando(true)
+    setCarregando(true)
 
-    // Simular delay de pensamento
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await new Promise(r => setTimeout(r, 900))
 
-    // Obter resposta aleatória
-    const resposta = RESPOSTAS_IA[Math.floor(Math.random() * RESPOSTAS_IA.length)]
-    const mensagemIA: Mensagem = {
-      tipo: 'ia',
-      texto: resposta.resposta,
-      curiosidade: resposta.curiosidade,
-      sugestao: resposta.sugestao,
-    }
-
-    setMensagens(prev => [...prev, mensagemIA])
+    const resposta = obterRespostaIA(pergunta)
+    const msgIA: Mensagem = { tipo: 'ia', texto: resposta.resposta, curiosidade: resposta.curiosidade, sugestao: resposta.sugestao }
+    setMensagens(prev => [...prev, msgIA])
     adicionarMensagem({ tipo: 'ia', texto: resposta.resposta })
-    setEstáCarregando(false)
+    setCarregando(false)
+
+    if (vozAtiva) falar(resposta.resposta)
   }
 
+  const toggleMicrofone = () => {
+    if (!suporta_stt) return
+
+    if (escutando) {
+      reconhecimentoRef.current?.stop()
+      setEscutando(false)
+      return
+    }
+
+    const SR = (window as any).SpeechRecognition ?? webkitSpeechRecognition
+    const rec: SpeechRecognitionInstance = new SR()
+    rec.lang = 'pt-BR'
+    rec.interimResults = false
+    rec.maxAlternatives = 1
+
+    rec.onresult = (e: any) => {
+      const transcricao = e.results[0][0].transcript
+      setInputValue(transcricao)
+      setEscutando(false)
+    }
+    rec.onerror = () => setEscutando(false)
+    rec.onend = () => setEscutando(false)
+
+    reconhecimentoRef.current = rec
+    rec.start()
+    setEscutando(true)
+  }
+
+  // Estilos
+  const bg       = temaEscuro ? 'bg-gray-800' : 'bg-white'
+  const headerBg = temaEscuro ? 'border-gray-700 bg-gray-900' : 'border-gray-100 bg-gray-50'
+  const footerBg = temaEscuro ? 'border-gray-700 bg-gray-900' : 'border-gray-100 bg-white'
+  const inputCls = temaEscuro ? 'bg-gray-700 text-white placeholder-gray-500' : 'bg-gray-100 text-neutral-900 placeholder-gray-400'
+  const texto    = temaEscuro ? 'text-white' : 'text-neutral-900'
+
   return (
-    <div className={`flex flex-col h-full ${temaEscuro ? 'bg-gray-800' : 'bg-white'}`}>
+    <div className={`flex flex-col h-full ${bg}`}>
       {/* Cabeçalho */}
-      <div className={`flex items-center gap-2 p-4 border-b ${temaEscuro ? 'border-gray-700 bg-gray-900' : 'border-gray-100 bg-gray-50'}`}>
+      <div className={`flex items-center gap-2 p-4 border-b ${headerBg}`}>
+        {aoVoltar && (
+          <button onClick={aoVoltar} className={`mr-1 text-lg ${temaEscuro ? 'text-gray-400 hover:text-white' : 'text-gray-400 hover:text-neutral-900'} transition-colors`}>‹</button>
+        )}
         <AvatarIA tamanho="pequeno" expressao="feliz" />
-        <div>
-          <h2 className={`font-semibold text-sm ${temaEscuro ? 'text-white' : 'text-neutral-900'}`}>Primeiro Passo</h2>
-          <p className={`text-xs ${temaEscuro ? 'text-gray-400' : 'text-gray-500'}`}>Assistente de Aprendizado</p>
+        <div className="flex-1">
+          <h2 className={`font-bold text-sm ${texto}`}>Primo — IA Educacional</h2>
+          <p className={`text-xs ${temaEscuro ? 'text-green-400' : 'text-green-500'}`}>● Online · Modo explorador</p>
         </div>
+        {/* Toggle voz */}
+        <button
+          onClick={() => setVozAtiva(v => !v)}
+          title={vozAtiva ? 'Desligar voz' : 'Ligar voz'}
+          className={`w-8 h-8 rounded-full flex items-center justify-center text-base transition-all
+            ${vozAtiva ? 'bg-violet-500 text-white' : temaEscuro ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-400'}`}
+        >
+          {vozAtiva ? '🔊' : '🔇'}
+        </button>
       </div>
 
-      {/* Área de mensagens */}
-      <div className={`flex-1 overflow-y-auto p-4 space-y-4 ${temaEscuro ? 'bg-gray-800' : 'bg-white'}`}>
+      {/* Mensagens */}
+      <div className={`flex-1 overflow-y-auto p-4 space-y-4 ${bg}`}>
         {mensagens.map((msg, idx) => (
           <div key={idx} className={`animate-slide-up ${msg.tipo === 'usuario' ? 'flex justify-end' : 'flex justify-start'}`}>
             {msg.tipo === 'ia' ? (
-              <div className="max-w-xs space-y-3">
-                {/* Resposta principal */}
+              <div className="max-w-xs space-y-2">
                 <div className={`rounded-2xl rounded-tl-sm px-4 py-3 ${temaEscuro ? 'bg-gray-700 text-white' : 'bg-gray-100 text-neutral-900'}`}>
                   <p className="text-sm leading-relaxed">{msg.texto}</p>
                 </div>
-
-                {/* Curiosidade */}
                 {msg.curiosidade && (
-                  <div className={`rounded-2xl rounded-tl-sm px-4 py-3 border-l-4 ${temaEscuro ? 'bg-blue-900/30 border-blue-700 text-blue-200' : 'bg-blue-100 border-blue-400 text-blue-900'}`}>
-                    <p className="text-xs font-semibold mb-1">✨ {msg.curiosidade.split('\n')[0]}</p>
-                    <p className="text-sm">{msg.curiosidade.split('\n').slice(1).join('\n')}</p>
+                  <div className={`rounded-2xl rounded-tl-sm px-4 py-2.5 border-l-4 ${temaEscuro ? 'bg-violet-900/30 border-violet-600 text-violet-200' : 'bg-violet-50 border-violet-400 text-violet-900'}`}>
+                    <p className="text-xs">{msg.curiosidade}</p>
                   </div>
                 )}
-
-                {/* Sugestão */}
                 {msg.sugestao && (
                   <button
                     onClick={() => aoEnviarMensagem(msg.sugestao!)}
-                    className={`text-left w-full rounded-2xl rounded-tl-sm px-4 py-3 transition-colors duration-200 border text-sm font-medium ${temaEscuro ? 'bg-gray-700 hover:bg-gray-600 text-white border-gray-600' : 'bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 text-neutral-900 border-blue-300'}`}
+                    className={`text-left w-full rounded-2xl rounded-tl-sm px-4 py-2.5 border text-xs font-medium transition-colors
+                      ${temaEscuro ? 'bg-gray-700 hover:bg-gray-600 text-blue-300 border-gray-600' : 'bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200'}`}
                   >
                     → {msg.sugestao}
                   </button>
                 )}
               </div>
             ) : (
-              <div className={`rounded-2xl rounded-tr-sm px-4 py-3 max-w-xs ${temaEscuro ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white'}`}>
+              <div className="bg-gradient-to-br from-violet-500 to-purple-600 text-white rounded-2xl rounded-tr-sm px-4 py-3 max-w-xs shadow-md shadow-violet-500/20">
                 <p className="text-sm">{msg.texto}</p>
               </div>
             )}
           </div>
         ))}
 
-        {estáCarregando && (
+        {carregando && (
           <div className="flex justify-start">
-            <div className={`rounded-2xl rounded-tl-sm px-4 py-3 ${temaEscuro ? 'bg-gray-700' : 'bg-gray-100'}`}>
-              <p className={`text-sm flex items-center gap-1 ${temaEscuro ? 'text-gray-300' : 'text-neutral-900'}`}>
-                Pensando<span className="animate-bounce">.</span><span className="animate-bounce" style={{ animationDelay: '0.1s' }}>.</span><span className="animate-bounce" style={{ animationDelay: '0.2s' }}>.</span>
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Área de input */}
-      <div className={`border-t p-4 space-y-3 ${temaEscuro ? 'border-gray-700 bg-gray-900' : 'border-gray-100 bg-white'}`}>
-        {/* Sugestões de prompts */}
-        {mensagens.length <= 1 && (
-          <div className="space-y-2">
-            <p className={`text-xs font-semibold ${temaEscuro ? 'text-gray-400' : 'text-gray-500'}`}>Tente perguntar:</p>
-            <div className="space-y-1.5">
-              {['Por que o céu é azul?', 'Por que vulcões entram em erupção?', 'Por que as baleias cantam?'].map((p) => (
-                <button
-                  key={p}
-                  onClick={() => aoEnviarMensagem(p)}
-                  className={`w-full text-left text-xs px-2 py-1.5 transition-colors ${temaEscuro ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'}`}
-                >
-                  • {p}
-                </button>
+            <div className={`rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-1 ${temaEscuro ? 'bg-gray-700' : 'bg-gray-100'}`}>
+              {[0,1,2].map(i => (
+                <div key={i} className="w-2 h-2 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
               ))}
             </div>
           </div>
         )}
-        
+        <div ref={bottomRef} />
+      </div>
+
+      {/* Input */}
+      <div className={`border-t p-3 space-y-2 ${footerBg}`}>
+        {mensagens.length <= 1 && (
+          <div className="space-y-1">
+            <p className={`text-xs font-semibold ${temaEscuro ? 'text-gray-400' : 'text-gray-500'}`}>Tente perguntar:</p>
+            {['Por que o céu é azul?', 'Como viviam os dinossauros?', 'O que existe no espaço?'].map(p => (
+              <button key={p} onClick={() => aoEnviarMensagem(p)} className={`block w-full text-left text-xs px-2 py-1 rounded-lg transition-colors ${temaEscuro ? 'text-violet-400 hover:bg-gray-700' : 'text-violet-600 hover:bg-violet-50'}`}>
+                • {p}
+              </button>
+            ))}
+          </div>
+        )}
+
         <div className="flex gap-2">
+          {/* Microfone (se suportado) */}
+          {suporta_stt && (
+            <button
+              onClick={toggleMicrofone}
+              title={escutando ? 'Parar de escutar' : 'Falar com a IA'}
+              className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-200
+                ${escutando
+                  ? 'bg-red-500 text-white animate-pulse shadow-lg shadow-red-500/40'
+                  : temaEscuro ? 'bg-gray-700 text-gray-300 hover:bg-violet-700 hover:text-white' : 'bg-gray-100 text-gray-500 hover:bg-violet-100 hover:text-violet-700'}`}
+            >
+              {escutando ? '⏹' : '🎙️'}
+            </button>
+          )}
+
           <input
             type="text"
             value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && aoEnviarMensagem(inputValue)}
-            placeholder="Faça uma pergunta..."
-            className={`flex-1 rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${temaEscuro ? 'bg-gray-700 text-white placeholder-gray-500' : 'bg-gray-100 text-neutral-900 placeholder-gray-500'}`}
+            onChange={e => setInputValue(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && aoEnviarMensagem(inputValue)}
+            placeholder={escutando ? 'Ouvindo...' : 'Faça uma pergunta...'}
+            disabled={escutando}
+            className={`flex-1 rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all ${inputCls}`}
           />
           <button
             onClick={() => aoEnviarMensagem(inputValue)}
-            disabled={!inputValue.trim() || estáCarregando}
-            className="bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white rounded-2xl px-4 py-2.5 transition-colors duration-200 font-medium text-sm"
+            disabled={!inputValue.trim() || carregando}
+            className="bg-gradient-to-br from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 disabled:opacity-40 text-white rounded-2xl px-4 py-2.5 transition-all duration-200 font-semibold text-sm shadow-md shadow-violet-500/30"
           >
-            Enviar
+            ➤
           </button>
         </div>
       </div>

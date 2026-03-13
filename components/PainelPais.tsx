@@ -1,71 +1,154 @@
 'use client'
 
-import { useTema } from '@/contexts/ThemeContext'
-
 interface PainelPaisProps {
   aoVoltar?: () => void
 }
 
+const STATS = [
+  { label: 'Uso de Hoje', valor: '32 min', icone: '⏱️', cor: 'from-blue-500 to-cyan-500' },
+  { label: 'Perguntas', valor: '12', icone: '❓', cor: 'from-violet-500 to-purple-600' },
+  { label: 'Tópicos', valor: '4', icone: '🎓', cor: 'from-emerald-500 to-green-600' },
+  { label: 'Sequência', valor: '5 dias', icone: '🔥', cor: 'from-orange-400 to-red-500' },
+]
+
+const ATIVIDADE_HOJE = [
+  { hora: '07:42', acao: 'Perguntou sobre dinossauros 🦕', tipo: 'chat' },
+  { hora: '07:51', acao: 'Completou Quiz — 4/5 corretas 🎮', tipo: 'quiz' },
+  { hora: '08:05', acao: 'Explorou tópico: Espaço 🚀', tipo: 'explore' },
+  { hora: '08:18', acao: 'Gerou história: Astronauta no fundo do mar 📖', tipo: 'historia' },
+  { hora: '08:29', acao: 'Completou missão: Observar natureza 🌱', tipo: 'missao' },
+]
+
+const BARRA_SEMANA = [
+  { dia: 'Seg', min: 20 },
+  { dia: 'Ter', min: 35 },
+  { dia: 'Qua', min: 15 },
+  { dia: 'Qui', min: 40 },
+  { dia: 'Sex', min: 32 },
+  { dia: 'Sáb', min: 55 },
+  { dia: 'Dom', min: 10 },
+]
+
+const MAX_BARRA = 55
+
+const COR_TIPO: Record<string, string> = {
+  chat: 'bg-violet-500',
+  quiz: 'bg-blue-500',
+  explore: 'bg-emerald-500',
+  historia: 'bg-pink-500',
+  missao: 'bg-orange-500',
+}
+
 export default function PainelPais({ aoVoltar }: PainelPaisProps) {
-  const { temaEscuro } = useTema()
-
-  const stats = [
-    { label: "Uso de Hoje", valor: '25 min', icone: '⏱️' },
-    { label: 'Perguntas Feitas', valor: '7', icone: '❓' },
-    { label: 'Tópicos Explorados', valor: '3', icone: '🎓' },
-    { label: 'Sequência de Aprendizado', valor: '5 dias', icone: '🔥' },
-  ]
-
-  const topicos = ['Dinossauros', 'Espaço', 'Animais']
-
   return (
-    <div className={`flex flex-col h-full ${temaEscuro ? 'bg-gray-800' : 'bg-white'}`}>
-      <div className={`flex items-center justify-between p-4 border-b ${temaEscuro ? 'border-gray-700 bg-gray-900' : 'border-gray-100 bg-gray-50'}`}>
-        <h1 className={`text-lg font-semibold ${temaEscuro ? 'text-white' : 'text-neutral-900'}`}>Painel dos Pais</h1>
-        <button onClick={aoVoltar} className={`transition-colors ${temaEscuro ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-neutral-900'}`}>✕</button>
-      </div>
-
-      <div className={`flex-1 overflow-y-auto p-4 space-y-6 ${temaEscuro ? 'bg-gray-800' : 'bg-white'}`}>
-        {/* Mensagem de boas-vindas */}
-        <div className={`rounded-2xl p-6 ${temaEscuro ? 'bg-gray-700' : 'bg-gradient-to-br from-blue-50 to-blue-100'}`}>
-          <h3 className={`font-display text-lg font-bold mb-2 ${temaEscuro ? 'text-white' : 'text-blue-900'}`}>Bem-vindo ao painel de monitoramento!</h3>
-          <p className={`text-sm font-body ${temaEscuro ? 'text-gray-300' : 'text-blue-800'}`}>Aqui você pode acompanhar a atividade educacional do seu filho no Primeiro Passo.</p>
+    <div className="flex flex-col h-full bg-slate-50 dark:bg-gray-900">
+      {/* Header */}
+      <div className="bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 px-4 py-5 text-white">
+        <div className="flex items-center justify-between mb-1">
+          <div>
+            <h1 className="font-bold text-base">Painel dos Pais</h1>
+            <p className="text-blue-200 text-xs">Acompanhe o progresso de aprendizado</p>
+          </div>
+          <button
+            onClick={aoVoltar}
+            className="w-9 h-9 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center text-white transition-all"
+            title="Sair do painel"
+          >
+            ↩️
+          </button>
         </div>
 
-        {/* Grade de estatísticas */}
+        {/* Mini perfil criança */}
+        <div className="mt-3 flex items-center gap-3 bg-white/10 rounded-2xl px-3 py-2">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-300 to-orange-400 flex items-center justify-center text-xl">🧒</div>
+          <div>
+            <p className="font-semibold text-sm">Explorador</p>
+            <p className="text-blue-200 text-xs">Ativo agora · última atividade há 3 min</p>
+          </div>
+          <div className="ml-auto">
+            <span className="bg-green-400 text-green-900 text-xs font-bold px-2 py-0.5 rounded-full">Online</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Conteúdo scrollável */}
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-5">
+        {/* Stats */}
         <div className="grid grid-cols-2 gap-3">
-          {stats.map((stat, idx) => (
-            <div key={idx} className={`rounded-2xl p-4 border transition-colors ${temaEscuro ? 'bg-gray-700 border-gray-600 hover:border-blue-600' : 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 hover:border-blue-400'}`}>
-              <p className="text-2xl mb-2">{stat.icone}</p>
-              <p className={`text-xs mb-1 ${temaEscuro ? 'text-gray-400' : 'text-gray-600'}`}>{stat.label}</p>
-              <p className={`text-xl font-bold ${temaEscuro ? 'text-blue-400' : 'text-blue-600'}`}>{stat.valor}</p>
+          {STATS.map((s, i) => (
+            <div key={i} className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
+              <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${s.cor} flex items-center justify-center text-base mb-2 shadow-sm`}>
+                {s.icone}
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{s.label}</p>
+              <p className="text-xl font-bold text-gray-800 dark:text-white mt-0.5">{s.valor}</p>
             </div>
           ))}
         </div>
 
-        {/* Seção de tópicos */}
-        <div>
-          <h3 className={`text-sm font-semibold mb-3 ${temaEscuro ? 'text-white' : 'text-neutral-900'}`}>Tópicos Explorados Hoje</h3>
-          <div className="space-y-2">
-            {topicos.map((topic, idx) => (
-              <div key={idx} className={`flex items-center gap-3 p-3 rounded-xl hover:opacity-80 transition-opacity ${temaEscuro ? 'bg-gray-700 text-white' : 'bg-gray-50 text-neutral-900'}`}>
-                <div className={`w-2 h-2 rounded-full ${temaEscuro ? 'bg-blue-400' : 'bg-blue-600'}`} />
-                <span className="text-sm font-medium">{topic}</span>
+        {/* Gráfico de uso semanal */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
+          <h3 className="text-sm font-bold text-gray-700 dark:text-white mb-3">📊 Uso na Semana (minutos)</h3>
+          <div className="flex items-end gap-1.5 h-16">
+            {BARRA_SEMANA.map((item, i) => {
+              const hoje = i === 5 // sábado = hoje demo
+              const pct = (item.min / MAX_BARRA) * 100
+              return (
+                <div key={item.dia} className="flex-1 flex flex-col items-center gap-1">
+                  <div
+                    className={`w-full rounded-t-lg transition-all duration-700 ${hoje ? 'bg-gradient-to-t from-violet-500 to-purple-400' : 'bg-blue-200 dark:bg-gray-600'}`}
+                    style={{ height: `${pct}%` }}
+                  />
+                  <p className={`text-[9px] font-semibold ${hoje ? 'text-violet-600 dark:text-violet-400' : 'text-gray-400'}`}>{item.dia}</p>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Linha do tempo hoje */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
+          <h3 className="text-sm font-bold text-gray-700 dark:text-white mb-3">🕐 Atividade de Hoje</h3>
+          <div className="space-y-3">
+            {ATIVIDADE_HOJE.map((item, i) => (
+              <div key={i} className="flex items-start gap-2.5">
+                <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${COR_TIPO[item.tipo] ?? 'bg-gray-400'}`} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-gray-800 dark:text-gray-200 leading-snug">{item.acao}</p>
+                </div>
+                <p className="text-[10px] text-gray-400 flex-shrink-0">{item.hora}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Configurações mockadas */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
+          <h3 className="text-sm font-bold text-gray-700 dark:text-white mb-3">⚙️ Configurações</h3>
+          <div className="space-y-3">
+            {[
+              { label: 'Limite diário de uso', valor: '60 min', icone: '⏳' },
+              { label: 'Contatos permitidos', valor: '4 contatos', icone: '👥' },
+              { label: 'Notificações para pais', valor: 'Ativado', icone: '🔔' },
+            ].map((cfg, i) => (
+              <div key={i} className="flex items-center justify-between py-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-base">{cfg.icone}</span>
+                  <p className="text-xs text-gray-600 dark:text-gray-300">{cfg.label}</p>
+                </div>
+                <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded-full">{cfg.valor}</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* Insight */}
-        <div className={`rounded-2xl p-4 border-l-4 ${temaEscuro ? 'bg-blue-900/30 border-blue-700 text-blue-200' : 'bg-blue-50 border-l-4 border-blue-400 text-blue-900'}`}>
-          <h4 className="font-semibold text-sm mb-1">💡 Insight</h4>
-          <p className="text-xs leading-relaxed">Seu filho está mostrando curiosidade sobre tópicos de natureza e ciência. Continue incentivando perguntas - ele está desenvolvendo habilidades de pensamento crítico!</p>
+        <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 border border-emerald-200 dark:border-emerald-800 rounded-2xl p-4">
+          <h4 className="text-sm font-bold text-emerald-800 dark:text-emerald-300 mb-1">💡 Insight da semana</h4>
+          <p className="text-xs text-emerald-700 dark:text-emerald-400 leading-relaxed">
+            Seu filho está se destacando em <strong>ciências e natureza</strong>! Ele já fez 12 perguntas hoje — a curiosidade é o motor do aprendizado. 🌟
+          </p>
         </div>
-      </div>
-
-      {/* Rodapé */}
-      <div className={`border-t p-4 text-center text-xs ${temaEscuro ? 'border-gray-700 text-gray-400' : 'border-gray-100 text-gray-500'}`}>
-        <p>Primeiro Passo é projetado para inspirar curiosidade e aprendizado</p>
       </div>
     </div>
   )
