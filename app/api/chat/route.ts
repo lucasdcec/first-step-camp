@@ -18,7 +18,6 @@ type ChatBody = {
 
 function parseRespostaIA(texto: string): { resposta: string; curiosidade?: string; sugestao?: string } {
   const trimmed = texto.trim()
-  // Tenta extrair JSON do texto (modelo às vezes envolve em ```json)
   let jsonStr = trimmed
   const jsonMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/)
   if (jsonMatch) jsonStr = jsonMatch[1].trim()
