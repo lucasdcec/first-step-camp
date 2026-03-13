@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import AvatarIA from './AvatarIA'
 import { useTema } from '@/contexts/ThemeContext'
 
@@ -21,21 +22,84 @@ const APPS = [
   { id: 'missoes',  icone: '🌱', label: 'Missões',  cor: 'from-teal-400 to-cyan-600',    sombra: 'shadow-teal-500/30' },
 ]
 
+const CONQUISTAS = ['🌟 Primeiro Quiz', '🧠 Curioso do Dia', '🌍 Explorador']
+
 export default function LancadorApps({ aoSelecionarApp, curiosidadeDiaria, aoSair }: LancadorAppsProps) {
   const { temaEscuro, alternarTema } = useTema()
+  const [mostraPerfil, setMostraPerfil] = useState(false)
 
   const bg      = temaEscuro ? 'bg-gray-900' : 'bg-gradient-to-b from-indigo-50 to-white'
   const texto   = temaEscuro ? 'text-white' : 'text-neutral-900'
   const borda   = temaEscuro ? 'border-gray-700' : 'border-gray-100'
 
+  const minUsados = 32
+  const minLimite = 60
+  const pctUso = Math.round((minUsados / minLimite) * 100)
+
   return (
-    <div className={`flex flex-col h-full ${bg} transition-colors duration-300`}>
+    <div className={`flex flex-col h-full ${bg} transition-colors duration-300 relative`}>
+
+      {/* Overlay de perfil do explorador */}
+      {mostraPerfil && (
+        <div
+          className="absolute inset-0 z-50 flex items-end"
+          onClick={() => setMostraPerfil(false)}
+        >
+          <div
+            className={`w-full rounded-t-3xl p-5 shadow-2xl animate-fade-in-up ${temaEscuro ? 'bg-gray-800' : 'bg-white'}`}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center text-3xl shadow-lg">
+                🚀
+              </div>
+              <div>
+                <p className={`font-bold text-base ${texto}`}>Explorador</p>
+                <p className={`text-xs ${temaEscuro ? 'text-gray-400' : 'text-gray-500'}`}>Nível 3 · Aprendiz Curioso</p>
+              </div>
+              <div className={`ml-auto flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${temaEscuro ? 'bg-amber-900/40 text-amber-300' : 'bg-amber-100 text-amber-600'}`}>
+                ⭐ 248 XP
+              </div>
+            </div>
+
+            {/* Barra de XP */}
+            <div className="mb-4">
+              <div className={`flex justify-between text-[10px] mb-1 ${temaEscuro ? 'text-gray-400' : 'text-gray-500'}`}>
+                <span>Progresso para Nível 4</span>
+                <span>248 / 300 XP</span>
+              </div>
+              <div className={`h-2 rounded-full overflow-hidden ${temaEscuro ? 'bg-gray-700' : 'bg-gray-100'}`}>
+                <div className="h-full bg-gradient-to-r from-violet-500 to-pink-500 rounded-full" style={{ width: '83%' }} />
+              </div>
+            </div>
+
+            {/* Conquistas */}
+            <p className={`text-xs font-semibold mb-2 ${temaEscuro ? 'text-gray-300' : 'text-gray-600'}`}>🏆 Conquistas</p>
+            <div className="flex gap-2 flex-wrap">
+              {CONQUISTAS.map((c, i) => (
+                <span key={i} className={`text-xs px-3 py-1 rounded-full ${temaEscuro ? 'bg-gray-700 text-violet-300' : 'bg-violet-50 text-violet-700'}`}>
+                  {c}
+                </span>
+              ))}
+            </div>
+
+            <button
+              onClick={() => setMostraPerfil(false)}
+              className="mt-4 w-full py-2 rounded-xl text-xs font-semibold text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              Fechar
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Cabeçalho */}
       <div className={`flex items-center justify-between px-4 py-3 border-b ${borda}`}>
         {/* Lado esquerdo: avatar + títulos + speech bubble */}
         <div className="flex items-start gap-2 min-w-0 mt-4">
-          <AvatarIA tamanho="pequeno" expressao="feliz" animado={true} />
+          <button onClick={() => setMostraPerfil(true)} className="flex-shrink-0 active:scale-90 transition-transform">
+            <AvatarIA tamanho="pequeno" expressao="feliz" animado={true} />
+          </button>
           <div className="min-w-0">
             <h1 className={`font-bold text-sm ${texto}`}>Primeiro Passo</h1>
             <p className={`text-xs ${temaEscuro ? 'text-gray-400' : 'text-gray-500'}`}>Modo Explorador 🚀</p>
@@ -95,6 +159,22 @@ export default function LancadorApps({ aoSelecionarApp, curiosidadeDiaria, aoSai
           </p>
         </div>
 
+        {/* Uso diário */}
+        <div className={`rounded-xl px-3 py-2 border ${temaEscuro ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
+          <div className="flex justify-between items-center mb-1">
+            <span className={`text-[10px] font-semibold ${temaEscuro ? 'text-gray-400' : 'text-gray-500'}`}>⏱ Uso hoje</span>
+            <span className={`text-[10px] font-bold ${pctUso >= 80 ? 'text-orange-500' : temaEscuro ? 'text-gray-300' : 'text-gray-600'}`}>
+              {minUsados}/{minLimite} min
+            </span>
+          </div>
+          <div className={`h-1.5 rounded-full overflow-hidden ${temaEscuro ? 'bg-gray-700' : 'bg-gray-100'}`}>
+            <div
+              className={`h-full rounded-full transition-all duration-500 ${pctUso >= 80 ? 'bg-gradient-to-r from-orange-400 to-red-500' : 'bg-gradient-to-r from-violet-400 to-purple-500'}`}
+              style={{ width: `${pctUso}%` }}
+            />
+          </div>
+        </div>
+
         {/* Missão do Dia */}
         {curiosidadeDiaria && (
           <button
@@ -151,10 +231,6 @@ export default function LancadorApps({ aoSelecionarApp, curiosidadeDiaria, aoSai
         </div>
       </div>
 
-      {/* Rodapé */}
-      <div className={`border-t ${borda} py-2 text-center text-xs ${temaEscuro ? 'text-gray-500' : 'text-gray-400'}`}>
-        Aperte o botão abaixo para voltar ao início
-      </div>
     </div>
   )
 }
