@@ -12,6 +12,7 @@ import ConstrutorHistorias from '@/components/ConstrutorHistorias'
 import TelefoneSeguro from '@/components/TelefoneSeguro'
 import MissoesNatureza from '@/components/MissoesNatureza'
 import PainelPais from '@/components/PainelPais'
+import TelaBloqueiada from '@/components/TelaBloqueiada'
 
 type Tela = 'selecao' | 'boot' | 'boot-pais' | 'inicio' | 'pergunte' | 'explore' | 'quiz' | 'historias' | 'telefone' | 'missoes' | 'pais'
 
@@ -31,7 +32,7 @@ const BOOT_MSGS = [
 ]
 
 export default function Inicio() {
-  const { perfil, sair } = usePerfil()
+  const { perfil, sair, bloqueado, motivoBloqueio, desbloquear } = usePerfil()
   const [tela, setTela] = useState<Tela>('selecao')
   const [emTransicao, setEmTransicao] = useState(false)
   const [saindo, setSaindo] = useState(false)
@@ -231,6 +232,13 @@ export default function Inicio() {
       {tela === 'pais' && (
         <div className={`h-full transition-all duration-300 ${emTransicao ? 'opacity-0' : saindo ? 'opacity-0 scale-[0.97]' : 'opacity-100 scale-100'}`}>
           <PainelPais aoVoltar={handleSair} />
+        </div>
+      )}
+
+      {/* Tela de bloqueio — sobrepõe o perfil explorador quando acesso está pausado */}
+      {perfil === 'explorador' && bloqueado && (
+        <div className="absolute inset-0 z-50">
+          <TelaBloqueiada motivo={motivoBloqueio} aoDesbloquear={desbloquear} />
         </div>
       )}
     </FrameDispositivo>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { usePerfil } from '@/contexts/PerfilContext'
 
 interface PainelPaisProps {
   aoVoltar?: () => void
@@ -220,16 +221,20 @@ function TelaAprendizado({ aoVoltar }: { aoVoltar: () => void }) {
 // ─── Painel Principal ──────────────────────────────────────────────────────────
 
 export default function PainelPais({ aoVoltar }: PainelPaisProps) {
-  const [pausado, setPausado]         = useState(false)
+  const { bloqueado, bloquear, desbloquear } = usePerfil()
   const [toastVisivel, setToastVisivel] = useState(false)
   const [toastMsg, setToastMsg]       = useState('')
   const [subTela, setSubTela]         = useState<SubTela>('painel')
   const [alertaSimulado, setAlertaSimulado] = useState(false)
 
   const alternarAcesso = () => {
-    const novoEstado = !pausado
-    setPausado(novoEstado)
-    setToastMsg(novoEstado ? '⏸ Acesso pausado com sucesso' : '▶ Acesso liberado com sucesso')
+    if (bloqueado) {
+      desbloquear()
+      setToastMsg('▶ Acesso liberado com sucesso')
+    } else {
+      bloquear('pausado')
+      setToastMsg('⏸ Acesso pausado com sucesso')
+    }
     setToastVisivel(true)
     setTimeout(() => setToastVisivel(false), 2500)
   }
@@ -442,11 +447,11 @@ export default function PainelPais({ aoVoltar }: PainelPaisProps) {
         <button
           onClick={alternarAcesso}
           className={`w-full py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-300 active:scale-95
-            ${pausado
+            ${bloqueado
               ? 'bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white shadow-lg shadow-emerald-500/30'
               : 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white shadow-lg shadow-orange-500/30'}`}
         >
-          {pausado ? '▶ Liberar Acesso da Criança' : '⏸ Pausar Acesso da Criança'}
+          {bloqueado ? '▶ Liberar Acesso da Criança' : '⏸ Pausar Acesso da Criança'}
         </button>
 
         {/* 9. Configurações */}

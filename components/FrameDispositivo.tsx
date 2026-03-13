@@ -54,7 +54,7 @@ export default function FrameDispositivo({ children, aoApertarBotao }: FrameDisp
         <div className="relative rounded-[2.5rem] border-[12px] border-gray-800 dark:border-gray-700 shadow-device flex flex-col overflow-hidden">
 
           {/* Tela de vidro */}
-          <div className="aspect-[9/16] bg-white dark:bg-gray-800 overflow-hidden flex flex-col">
+          <div className="relative aspect-[9/16] bg-white dark:bg-gray-800 overflow-hidden flex flex-col">
             <StatusBar />
             {children}
           </div>
