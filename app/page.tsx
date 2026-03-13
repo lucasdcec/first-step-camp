@@ -23,11 +23,21 @@ const CURIOSIDADES_DIARIAS = [
   { pergunta: 'Por que a água é molhada?', icone: '💧' },
 ]
 
+const BOOT_MSGS = [
+  'Carregando quizzes...',
+  'Conectando com a IA...',
+  'Preparando missões...',
+  'Pronto para explorar! 🚀',
+]
+
 export default function Inicio() {
   const { perfil, sair } = usePerfil()
   const [tela, setTela] = useState<Tela>('selecao')
   const [emTransicao, setEmTransicao] = useState(false)
   const [saindo, setSaindo] = useState(false)
+  const [voltando, setVoltando] = useState(false)
+  const [bootMsgIdx, setBootMsgIdx] = useState(0)
+  const [bootMsgVisivel, setBootMsgVisivel] = useState(true)
   const [curiosidadeDiaria] = useState(
     CURIOSIDADES_DIARIAS[Math.floor(Math.random() * CURIOSIDADES_DIARIAS.length)]
   )
@@ -43,6 +53,7 @@ export default function Inicio() {
   // Reagir a mudança de perfil
   useEffect(() => {
     if (perfil === 'explorador') {
+      setBootMsgIdx(0)
       setTela('boot')
     } else if (perfil === 'pais') {
       setTela('boot-pais')
@@ -51,11 +62,27 @@ export default function Inicio() {
     }
   }, [perfil])
 
-  // Boot para exploradores
+  // Boot para exploradores — mensagens progressivas com fade suave
   useEffect(() => {
-    if (tela === 'boot') {
-      const timer = setTimeout(() => setTela('inicio'), 2500)
-      return () => clearTimeout(timer)
+    if (tela !== 'boot') return
+    let idx = 0
+    const avancar = () => {
+      if (idx >= BOOT_MSGS.length - 1) return
+      setBootMsgVisivel(false)
+      setTimeout(() => {
+        idx += 1
+        setBootMsgIdx(idx)
+        setBootMsgVisivel(true)
+      }, 180)
+    }
+    const intervalo = setInterval(avancar, 650)
+    const timer = setTimeout(() => {
+      clearInterval(intervalo)
+      setTela('inicio')
+    }, 2800)
+    return () => {
+      clearTimeout(timer)
+      clearInterval(intervalo)
     }
   }, [tela])
 
@@ -68,10 +95,15 @@ export default function Inicio() {
   }, [tela])
 
   const mudarTela = (novaTela: Tela) => {
+    const voltandoParaInicio = novaTela === 'inicio'
     setEmTransicao(true)
     setTimeout(() => {
       setTela(novaTela)
       setEmTransicao(false)
+      if (voltandoParaInicio) {
+        setVoltando(true)
+        setTimeout(() => setVoltando(false), 300)
+      }
     }, 200)
   }
 
@@ -90,11 +122,13 @@ export default function Inicio() {
       {/* Boot do explorador */}
       {tela === 'boot' && (
         <div className="flex flex-col items-center justify-center h-full bg-gradient-to-br from-violet-900 via-purple-900 to-indigo-950">
-          <div className="space-y-4 text-center animate-pulse">
-            <div className="text-6xl">🚀</div>
+          <div className="space-y-4 text-center">
+            <div className="text-6xl animate-pulse">🚀</div>
             <div>
               <h1 className="text-2xl font-bold text-white">Primeiro Passo</h1>
-              <p className="text-sm text-purple-300 mt-2">Preparando sua aventura...</p>
+              <p className={`text-sm text-purple-300 mt-2 transition-opacity duration-150 ${bootMsgVisivel ? 'opacity-100' : 'opacity-0'}`}>
+                {BOOT_MSGS[bootMsgIdx]}
+              </p>
             </div>
             <div className="flex gap-1 justify-center mt-4">
               {[0,1,2].map(i => (
@@ -134,7 +168,12 @@ export default function Inicio() {
 
       {/* Tela inicial */}
       {tela === 'inicio' && (
-        <div className={`h-full transition-all duration-300 ${emTransicao ? 'opacity-0' : saindo ? 'opacity-0 scale-[0.97]' : 'opacity-100 scale-100'}`}>
+        <div className={`h-full transition-all duration-300 ${
+          emTransicao ? 'opacity-0' :
+          saindo ? 'opacity-0 scale-[0.97]' :
+          voltando ? 'animate-slide-in-left' :
+          'opacity-100 scale-100'
+        }`}>
           <LancadorApps
             aoSelecionarApp={(app) => mudarTela(app as Tela)}
             curiosidadeDiaria={curiosidadeDiaria}

@@ -170,3 +170,13 @@ html.dark ::-webkit-scrollbar-thumb:hover {
 .animate-profile-exit {
   animation: profileExit 0.28s ease-in forwards;
 }
+
+/* Slide-in da esquerda ao voltar para início */
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.25s ease-out forwards;
+}
