@@ -24,7 +24,6 @@ const CURIOSIDADES_DIARIAS = [
 export default function Inicio() {
   const [tela, setTela] = useState<Tela>('boot')
   const [emTransicao, setEmTransicao] = useState(false)
-  const [contagemBotao, setContagemBotao] = useState(0)
   const [curiosidadeDiaria] = useState(
     CURIOSIDADES_DIARIAS[Math.floor(Math.random() * CURIOSIDADES_DIARIAS.length)]
   )
@@ -39,31 +38,24 @@ export default function Inicio() {
     }
   }, [tela])
 
-  const mudarTela = (novaTela: Tela) => {
+  const mudarTela = (novaTela: Tela, imediato = false) => {
+    if (imediato) {
+      setTela(novaTela)
+      setEmTransicao(false)
+      return
+    }
     setEmTransicao(true)
-    setContagemBotao(0)
     setTimeout(() => {
       setTela(novaTela)
       setEmTransicao(false)
-    }, 200)
+    }, 150)
   }
 
   const aoApertarBotaoDispositivo = () => {
-    // Voltar para inicio de qualquer app
     if (tela !== 'inicio' && tela !== 'boot') {
-      mudarTela('inicio')
+      mudarTela('inicio', true)
     } else if (tela === 'inicio') {
-      // Contar cliques para abrir painel dos pais (easter egg)
-      setContagemBotao(prev => {
-        const novo = prev + 1
-        if (novo >= 3) {
-          mudarTela('pais')
-          return 0
-        }
-        return novo
-      })
-      // Resetar contador após 2 segundos
-      setTimeout(() => setContagemBotao(0), 2000)
+      mudarTela('pais', true)
     }
   }
 

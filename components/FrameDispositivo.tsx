@@ -14,21 +14,40 @@ export default function FrameDispositivo({ children, aoApertarBotao }: FrameDisp
           {/* Efeito de brilho sutil */}
           <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-blue-500/10 to-transparent blur-2xl pointer-events-none" />
           
-          {/* Tela principal do dispositivo */}
+          {/* Tela principal do dispositivo: padding pra inferior evita que o botão de home cubra o conteúdo */}
           <div className="relative device-screen aspect-[9/16] flex flex-col overflow-hidden bg-white dark:bg-gray-800">
-            {children}
-          </div>
-
-          {/* Botão físico de home */}
-          <button
-            onClick={aoApertarBotao}
-            className="device-button active:scale-95 transition-transform duration-150"
-            aria-label="Botão de inicio do dispositivo"
-            title="Aperte para voltar ao início"
-          >
-            <div className="w-full h-full rounded-full flex items-center justify-center">
-              <div className="w-2 h-2 bg-gray-600 rounded-full" />
+            <div className="flex flex-col h-full min-h-0 pb-20">
+              {children}
             </div>
+          </div>
+ {/* Botão físico de home — resposta imediata, área de toque generosa */}
+          <button
+            type="button"
+            onPointerDown={(e) => {
+              e.currentTarget.classList.add('device-button-pressed')
+            }}
+            onPointerUp={(e) => {
+              e.currentTarget.classList.remove('device-button-pressed')
+              if (e.pointerType === 'mouse' && e.button !== 0) return
+              e.preventDefault()
+              e.stopPropagation()
+              aoApertarBotao?.()
+            }}
+            onPointerLeave={(e) => {
+              e.currentTarget.classList.remove('device-button-pressed')
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                aoApertarBotao?.()
+              }
+            }}
+            onClick={(e) => e.preventDefault()}
+            className="device-button"
+            aria-label="Voltar ao início"
+            title="Voltar ao início"
+          >
+            <span className="device-button-dot" aria-hidden />
           </button>
         </div>
 

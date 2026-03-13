@@ -17,6 +17,19 @@ npm run dev
 http://localhost:3000
 ```
 
+### 4️⃣ (Opcional) Ativar IA real no Chat
+O chat usa **Gemini** (Google) ou **Groq** para respostas. Sem chaves, o app usa respostas fixas (fallback).
+
+1. Copie o exemplo de variáveis de ambiente:
+   ```bash
+   cp .env.example .env
+   ```
+2. Edite `.env` e preencha **um** dos provedores:
+   - **Gemini:** Obtenha chave em [Google AI Studio](https://aistudio.google.com/apikey) e defina `GEMINI_API_KEY=...`
+   - **Groq:** Obtenha chave em [Groq Console](https://console.groq.com/keys) e defina `GROQ_API_KEY=...`
+3. Escolha o provedor: `AI_PROVIDER=gemini` ou `AI_PROVIDER=groq`
+4. Reinicie o servidor (`npm run dev`). O app "Pergunte" passará a usar a IA configurada.
+
 ---
 
 ## 🎮 Testando Cada Funcionalidade

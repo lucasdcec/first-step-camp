@@ -60,31 +60,53 @@ export default function InterfaceChat({ aoExplorar }: InterfaceChatProps) {
   const [inputValue, setInputValue] = useState('')
   const [estáCarregando, setEstáCarregando] = useState(false)
 
+  const obterRespostaFallback = () => {
+    const r = RESPOSTAS_IA[Math.floor(Math.random() * RESPOSTAS_IA.length)]
+    return { resposta: r.resposta, curiosidade: r.curiosidade, sugestao: r.sugestao }
+  }
+
   const aoEnviarMensagem = async (pergunta: string) => {
     if (!pergunta.trim()) return
 
-    // Adicionar mensagem do usuário
     const mensagemUsuario: Mensagem = { tipo: 'usuario', texto: pergunta }
     setMensagens(prev => [...prev, mensagemUsuario])
     adicionarMensagem({ tipo: 'usuario', texto: pergunta })
     setInputValue('')
     setEstáCarregando(true)
 
-    // Simular delay de pensamento
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pergunta: pergunta.trim() }),
+      })
+      const data = await res.json()
 
-    // Obter resposta aleatória
-    const resposta = RESPOSTAS_IA[Math.floor(Math.random() * RESPOSTAS_IA.length)]
-    const mensagemIA: Mensagem = {
-      tipo: 'ia',
-      texto: resposta.resposta,
-      curiosidade: resposta.curiosidade,
-      sugestao: resposta.sugestao,
+      if (!res.ok) {
+        throw new Error(data.erro || 'Erro ao obter resposta')
+      }
+
+      const mensagemIA: Mensagem = {
+        tipo: 'ia',
+        texto: data.resposta || data.texto || '',
+        curiosidade: data.curiosidade || undefined,
+        sugestao: data.sugestao || undefined,
+      }
+      setMensagens(prev => [...prev, mensagemIA])
+      adicionarMensagem({ tipo: 'ia', texto: mensagemIA.texto })
+    } catch {
+      const fallback = obterRespostaFallback()
+      const mensagemIA: Mensagem = {
+        tipo: 'ia',
+        texto: fallback.resposta,
+        curiosidade: fallback.curiosidade,
+        sugestao: fallback.sugestao,
+      }
+      setMensagens(prev => [...prev, mensagemIA])
+      adicionarMensagem({ tipo: 'ia', texto: fallback.resposta })
+    } finally {
+      setEstáCarregando(false)
     }
-
-    setMensagens(prev => [...prev, mensagemIA])
-    adicionarMensagem({ tipo: 'ia', texto: resposta.resposta })
-    setEstáCarregando(false)
   }
 
   return (

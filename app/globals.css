@@ -33,7 +33,42 @@ html.dark body {
   }
 
   .device-button {
-    @apply absolute bottom-4 left-1/2 transform -translate-x-1/2 w-12 h-12 rounded-full bg-gray-900 dark:bg-gray-600 shadow-lg hover:shadow-xl transition-shadow duration-300 cursor-pointer;
+    @apply absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full cursor-pointer z-10 select-none flex items-center justify-center;
+    width: 3rem;
+    height: 3rem;
+    min-width: 3rem;
+    min-height: 3rem;
+    background: linear-gradient(180deg, #374151 0%, #1f2937 100%);
+    box-shadow:
+      0 2px 4px rgba(0, 0, 0, 0.3),
+      0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+    transition: transform 0.1s ease, box-shadow 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  .device-button:hover {
+    background: linear-gradient(180deg, #4b5563 0%, #374151 100%);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.35);
+  }
+  .device-button:active,
+  .device-button.device-button-pressed {
+    transform: translate(-50%, 2px) scale(0.94);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  }
+  .device-button-dot {
+    @apply rounded-full bg-gray-400 block;
+    width: 0.5rem;
+    height: 0.5rem;
+  }
+  .dark .device-button {
+    background: linear-gradient(180deg, #4b5563 0%, #374151 100%);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+  }
+  .dark .device-button:hover {
+    background: linear-gradient(180deg, #6b7280 0%, #4b5563 100%);
+  }
+  .dark .device-button-dot {
+    @apply bg-gray-300;
   }
 
   .fade-in-slow {
