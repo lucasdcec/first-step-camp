@@ -1,4 +1,4 @@
-# 🎓 Primeiro Passo - App Melhorado v2.0
+# 🎓 Primeiro Passo 
 
 Um assistente de aprendizado IA para crianças de 7 a 12 anos, completamente refatorado e melhorado.
 
