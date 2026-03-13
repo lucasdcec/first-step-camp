@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { useContatos, Contato } from '@/hooks/useContatos'
+import { useContatos } from '@/hooks/useContatos'
 import { useLocalStorage } from '@/hooks/useLocalStorage'
 
 interface TelefoneSeguroProps {

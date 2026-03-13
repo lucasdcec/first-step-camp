@@ -26,11 +26,11 @@ yarn-debug.log*
 yarn-error.log*
 
 #POR FAVOR NÃO ESQUEÇA DE DESCOMENTAR AS LINHAS EM PRODUÇAO!!!!
-# .env
-# .env.local
-# .env.development.local
-# .env.test.local
-# .env.production.local
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # IDE
 .vscode/

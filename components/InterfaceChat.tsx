@@ -10,64 +10,6 @@ interface InterfaceChatProps {
   aoVoltar?: () => void
 }
 
-// Respostas mockadas com escopo educacional
-const RESPOSTAS_IA = [
-  {
-    palavrasChave: ['céu', 'azul'],
-    resposta: 'O céu fica azul porque a luz solar se dispersa na atmosfera. A luz azul tem ondas curtas e se espalha mais facilmente!',
-    curiosidade: '✨ Em Marte, o céu é marrom-dourado durante o dia.',
-    sugestao: 'Quer aprender sobre arco-íris?',
-  },
-  {
-    palavrasChave: ['dinossauro', 'dinossauros'],
-    resposta: 'Dinossauros viveram há milhões de anos! Eram répteis incríveis — alguns tinham penas igual a pássaros.',
-    curiosidade: '✨ O T-Rex tinha braços pequenos mas mordia com muita força!',
-    sugestao: 'Quer saber sobre fósseis?',
-  },
-  {
-    palavrasChave: ['espaço', 'planeta', 'estrela', 'universo'],
-    resposta: 'O espaço é imenso e cheio de maravilhas! Nosso Sol é apenas uma estrela entre bilhões na Via Láctea.',
-    curiosidade: '✨ Um dia em Vênus dura mais do que um ano em Vênus!',
-    sugestao: 'Quer explorar os planetas?',
-  },
-  {
-    palavrasChave: ['oceano', 'mar', 'água'],
-    resposta: 'Os oceanos cobrem mais de 70% da Terra e são lar de criaturas fantásticas que ainda estamos descobrindo!',
-    curiosidade: '✨ O oceano é mais profundo que o Monte Everest é alto!',
-    sugestao: 'Quer aprender sobre animais marinhos?',
-  },
-  {
-    palavrasChave: ['animal', 'animais', 'bicho'],
-    resposta: 'Existem milhões de espécies de animais! Desde insetos minúsculos até baleias gigantescas.',
-    curiosidade: '✨ Uma borboleta sente o gosto com os pés!',
-    sugestao: 'Quer descobrir animais selvagens?',
-  },
-]
-
-const RESPOSTA_FORA_ESCOPO = {
-  resposta: 'Hmm, essa pergunta é melhor para os seus pais! 😊 Que tal conversar com eles sobre isso? Eu sou especialista em ciência, natureza e curiosidades da natureza!',
-  curiosidade: '✨ Sabia que aqui você pode aprender sobre espaço, dinossauros e muito mais?',
-  sugestao: 'Quer explorar tópicos de ciência?',
-}
-
-const RESPOSTA_PADRAO = {
-  resposta: 'Que pergunta interessante! Adoro curiosidade! 🧠 Posso te ajudar com ciência, natureza, animais, espaço e muito mais.',
-  curiosidade: '✨ A curiosidade é o primeiro passo para grandes descobertas!',
-  sugestao: 'Quer explorar tópicos incríveis?',
-}
-
-function obterRespostaIA(pergunta: string) {
-  const lower = pergunta.toLowerCase()
-  
-  // Verificar se é fora do escopo
-  const fora = ['namoro', 'violência', 'guerra', 'morte', 'política', 'religião', 'sexo', 'droga', 'álcool', 'cigarro']
-  if (fora.some(p => lower.includes(p))) return RESPOSTA_FORA_ESCOPO
-
-  // Tentar match por palavras-chave
-  const match = RESPOSTAS_IA.find(r => r.palavrasChave.some(p => lower.includes(p)))
-  return match ?? RESPOSTA_PADRAO
-}
-
 interface Mensagem {
   tipo: 'usuario' | 'ia'
   texto: string

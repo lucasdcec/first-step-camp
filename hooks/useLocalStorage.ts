@@ -5,7 +5,6 @@ import { useState, useEffect } from 'react'
 export function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T | ((val: T) => T)) => void] {
   // Estado para armazenar o valor
   const [storedValue, setStoredValue] = useState<T>(initialValue)
-  const [isMounted, setIsMounted] = useState(false)
 
   // Ler do localStorage na primeira renderização
   useEffect(() => {
@@ -20,7 +19,6 @@ export function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T 
     } catch (error) {
       console.error(`Erro ao ler localStorage (${key}):`, error)
     }
-    setIsMounted(true)
   }, [key])
 
   // Função para atualizar valor
