@@ -24,7 +24,6 @@ const CURIOSIDADES_DIARIAS = [
 export default function Inicio() {
   const [tela, setTela] = useState<Tela>('boot')
   const [emTransicao, setEmTransicao] = useState(false)
-  const [contagemBotao, setContagemBotao] = useState(0)
   const [curiosidadeDiaria] = useState(
     CURIOSIDADES_DIARIAS[Math.floor(Math.random() * CURIOSIDADES_DIARIAS.length)]
   )
@@ -40,7 +39,6 @@ export default function Inicio() {
   }, [tela])
 
   const mudarTela = (novaTela: Tela, imediato = false) => {
-    setContagemBotao(0)
     if (imediato) {
       setTela(novaTela)
       setEmTransicao(false)
@@ -57,15 +55,7 @@ export default function Inicio() {
     if (tela !== 'inicio' && tela !== 'boot') {
       mudarTela('inicio', true)
     } else if (tela === 'inicio') {
-      setContagemBotao(prev => {
-        const novo = prev + 1
-        if (novo >= 3) {
-          mudarTela('pais', true)
-          return 0
-        }
-        return novo
-      })
-      setTimeout(() => setContagemBotao(0), 2000)
+      mudarTela('pais', true)
     }
   }
 
