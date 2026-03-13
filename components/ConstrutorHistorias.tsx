@@ -40,7 +40,7 @@ export default function ConstrutorHistorias({ aoVoltar }: ConstrutorHistoriasPro
   const [personagemSelecionado, setPersonagemSelecionado] = useState<string | null>(null)
   const [localSelecionado, setLocalSelecionado] = useState<string | null>(null)
   const [estaGerando, setEstaGerando] = useState(false)
-  const [historiasArmazenadas, setHistoriasArmazenadas] = useLocalStorage<any[]>('primeiro-passo-historias', [])
+  const [_historiasArmazenadas, _setHistoriasArmazenadas] = useLocalStorage<any[]>('primeiro-passo-historias', [])
 
   const aoSelecionarPersonagem = (id: string) => {
     setPersonagemSelecionado(id)
