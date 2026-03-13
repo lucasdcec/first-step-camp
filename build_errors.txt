@@ -1,6 +1,0 @@
-﻿
-> primeiro-passo-app@2.0.0 type-check
-> tsc --noEmit
-
-components/TelefoneSeguro.tsx(4,23): error TS6133: 'Contato' is declared but its value is never read.
-hooks/useLocalStorage.ts(8,10): error TS6133: 'isMounted' is declared but its value is never read.
