@@ -1,5 +1,7 @@
 'use client'
 
+import { useState } from 'react'
+
 interface PainelPaisProps {
   aoVoltar?: () => void
 }
@@ -39,9 +41,31 @@ const COR_TIPO: Record<string, string> = {
   missao: 'bg-orange-500',
 }
 
+const MATERIAS = ['🔬 Ciências', '🌌 Espaço', '📖 Histórias', '🔢 Matemática']
+
 export default function PainelPais({ aoVoltar }: PainelPaisProps) {
+  const [pausado, setPausado] = useState(false)
+  const [toastVisivel, setToastVisivel] = useState(false)
+  const [toastMsg, setToastMsg] = useState('')
+
+  const alternarAcesso = () => {
+    const novoEstado = !pausado
+    setPausado(novoEstado)
+    setToastMsg(novoEstado ? '⏸ Acesso pausado com sucesso' : '▶ Acesso liberado com sucesso')
+    setToastVisivel(true)
+    setTimeout(() => setToastVisivel(false), 2500)
+  }
+
   return (
-    <div className="flex flex-col h-full bg-slate-50 dark:bg-gray-900">
+    <div className="flex flex-col h-full bg-slate-50 dark:bg-gray-900 relative">
+
+      {/* Toast */}
+      {toastVisivel && (
+        <div className="animate-fade-in-up absolute bottom-6 left-1/2 -translate-x-1/2 z-50 bg-gray-900 text-white text-xs px-4 py-2 rounded-full shadow-xl whitespace-nowrap">
+          {toastMsg}
+        </div>
+      )}
+
       {/* Header */}
       <div className="bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 px-4 py-5 text-white">
         <div className="flex items-center justify-between mb-1">
@@ -58,8 +82,18 @@ export default function PainelPais({ aoVoltar }: PainelPaisProps) {
           </button>
         </div>
 
+        {/* Pills de score */}
+        <div className="flex gap-2 mt-2 mb-3">
+          <span className="bg-white/20 text-white text-[10px] font-bold px-3 py-1 rounded-full flex items-center gap-1">
+            📈 Semana excelente!
+          </span>
+          <span className="bg-green-400/25 text-green-200 text-[10px] font-semibold px-2 py-1 rounded-full">
+            +15% vs semana passada
+          </span>
+        </div>
+
         {/* Mini perfil criança */}
-        <div className="mt-3 flex items-center gap-3 bg-white/10 rounded-2xl px-3 py-2">
+        <div className="flex items-center gap-3 bg-white/10 rounded-2xl px-3 py-2">
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-300 to-orange-400 flex items-center justify-center text-xl">🧒</div>
           <div>
             <p className="font-semibold text-sm">Explorador</p>
@@ -72,7 +106,27 @@ export default function PainelPais({ aoVoltar }: PainelPaisProps) {
       </div>
 
       {/* Conteúdo scrollável */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-5">
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+
+        {/* Insight + tags de matérias */}
+        <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 border border-emerald-200 dark:border-emerald-800 rounded-2xl p-4">
+          <h4 className="text-sm font-bold text-emerald-800 dark:text-emerald-300 mb-1">💡 Insight da semana</h4>
+          <p className="text-xs text-emerald-700 dark:text-emerald-400 leading-relaxed">
+            Seu filho está se destacando em <strong>ciências e natureza</strong>! Ele já fez 12 perguntas hoje — a curiosidade é o motor do aprendizado. 🌟
+          </p>
+          {/* Tags de matérias favoritas */}
+          <div className="flex flex-wrap gap-1.5 mt-3">
+            {MATERIAS.map((tag, i) => (
+              <span
+                key={i}
+                className="text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-full"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        </div>
+        
         {/* Stats */}
         <div className="grid grid-cols-2 gap-3">
           {STATS.map((s, i) => (
@@ -86,23 +140,41 @@ export default function PainelPais({ aoVoltar }: PainelPaisProps) {
           ))}
         </div>
 
+        {/* Botão Pausar Acesso */}
+        <button
+          onClick={alternarAcesso}
+          className={`w-full py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-300 active:scale-95
+            ${pausado
+              ? 'bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white shadow-lg shadow-emerald-500/30'
+              : 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white shadow-lg shadow-orange-500/30'}`}
+        >
+          {pausado ? '▶ Liberar Acesso da Criança' : '⏸ Pausar Acesso da Criança'}
+        </button>
+
         {/* Gráfico de uso semanal */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
           <h3 className="text-sm font-bold text-gray-700 dark:text-white mb-3">📊 Uso na Semana (minutos)</h3>
-          <div className="flex items-end gap-1.5 h-16">
-            {BARRA_SEMANA.map((item, i) => {
-              const hoje = i === 5 // sábado = hoje demo
-              const pct = (item.min / MAX_BARRA) * 100
-              return (
-                <div key={item.dia} className="flex-1 flex flex-col items-center gap-1">
-                  <div
-                    className={`w-full rounded-t-lg transition-all duration-700 ${hoje ? 'bg-gradient-to-t from-violet-500 to-purple-400' : 'bg-blue-200 dark:bg-gray-600'}`}
-                    style={{ height: `${pct}%` }}
-                  />
-                  <p className={`text-[9px] font-semibold ${hoje ? 'text-violet-600 dark:text-violet-400' : 'text-gray-400'}`}>{item.dia}</p>
-                </div>
-              )
-            })}
+          <div className="relative mt-4">
+            <div className="flex items-end gap-1.5 h-16">
+              {BARRA_SEMANA.map((item, i) => {
+                const hoje = i === 5 // sábado = hoje na demo
+                const pct = (item.min / MAX_BARRA) * 100
+                return (
+                  <div key={item.dia} className="flex-1 flex flex-col items-center gap-1 relative">
+                    {hoje && (
+                      <p className="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] font-bold text-violet-500 whitespace-nowrap">
+                        {item.min}min
+                      </p>
+                    )}
+                    <div
+                      className={`w-full rounded-t-lg transition-all duration-700 ${hoje ? 'bg-gradient-to-t from-violet-500 to-purple-400' : 'bg-blue-200 dark:bg-gray-600'}`}
+                      style={{ height: `${pct}%` }}
+                    />
+                    <p className={`text-[9px] font-semibold ${hoje ? 'text-violet-600 dark:text-violet-400' : 'text-gray-400'}`}>{item.dia}</p>
+                  </div>
+                )
+              })}
+            </div>
           </div>
         </div>
 
@@ -142,13 +214,6 @@ export default function PainelPais({ aoVoltar }: PainelPaisProps) {
           </div>
         </div>
 
-        {/* Insight */}
-        <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 border border-emerald-200 dark:border-emerald-800 rounded-2xl p-4">
-          <h4 className="text-sm font-bold text-emerald-800 dark:text-emerald-300 mb-1">💡 Insight da semana</h4>
-          <p className="text-xs text-emerald-700 dark:text-emerald-400 leading-relaxed">
-            Seu filho está se destacando em <strong>ciências e natureza</strong>! Ele já fez 12 perguntas hoje — a curiosidade é o motor do aprendizado. 🌟
-          </p>
-        </div>
       </div>
     </div>
   )

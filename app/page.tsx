@@ -13,7 +13,7 @@ import TelefoneSeguro from '@/components/TelefoneSeguro'
 import MissoesNatureza from '@/components/MissoesNatureza'
 import PainelPais from '@/components/PainelPais'
 
-type Tela = 'selecao' | 'boot' | 'inicio' | 'pergunte' | 'explore' | 'quiz' | 'historias' | 'telefone' | 'missoes' | 'pais'
+type Tela = 'selecao' | 'boot' | 'boot-pais' | 'inicio' | 'pergunte' | 'explore' | 'quiz' | 'historias' | 'telefone' | 'missoes' | 'pais'
 
 const CURIOSIDADES_DIARIAS = [
   { pergunta: 'Por que as baleias cantam?', icone: '🐋' },
@@ -27,16 +27,25 @@ export default function Inicio() {
   const { perfil, sair } = usePerfil()
   const [tela, setTela] = useState<Tela>('selecao')
   const [emTransicao, setEmTransicao] = useState(false)
+  const [saindo, setSaindo] = useState(false)
   const [curiosidadeDiaria] = useState(
     CURIOSIDADES_DIARIAS[Math.floor(Math.random() * CURIOSIDADES_DIARIAS.length)]
   )
+
+  const handleSair = () => {
+    setSaindo(true)
+    setTimeout(() => {
+      sair()
+      setSaindo(false)
+    }, 300)
+  }
 
   // Reagir a mudança de perfil
   useEffect(() => {
     if (perfil === 'explorador') {
       setTela('boot')
     } else if (perfil === 'pais') {
-      setTela('pais')
+      setTela('boot-pais')
     } else {
       setTela('selecao')
     }
@@ -46,6 +55,14 @@ export default function Inicio() {
   useEffect(() => {
     if (tela === 'boot') {
       const timer = setTimeout(() => setTela('inicio'), 2500)
+      return () => clearTimeout(timer)
+    }
+  }, [tela])
+
+  // Boot para pais
+  useEffect(() => {
+    if (tela === 'boot-pais') {
+      const timer = setTimeout(() => setTela('pais'), 1800)
       return () => clearTimeout(timer)
     }
   }, [tela])
@@ -88,13 +105,40 @@ export default function Inicio() {
         </div>
       )}
 
+      {/* Boot do painel dos pais */}
+      {tela === 'boot-pais' && (
+        <div className="flex flex-col items-center justify-center h-full bg-gradient-to-br from-blue-900 via-indigo-900 to-slate-900">
+          <div className="flex flex-col items-center gap-5 text-center">
+
+            {/* Ícone com anel pulsante */}
+            <div className="relative">
+              <div className="absolute inset-0 rounded-full bg-blue-400/20 animate-ping" />
+              <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/40">
+                <span className="text-4xl">🔓</span>
+              </div>
+            </div>
+
+            <div>
+              <p className="text-blue-200 text-xs font-semibold tracking-widest uppercase mb-1">Acesso autorizado</p>
+              <h1 className="text-white font-bold text-xl">Painel dos Pais</h1>
+            </div>
+
+            {/* Barra de progresso */}
+            <div className="w-40 h-1 bg-white/10 rounded-full overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-blue-400 to-cyan-300 rounded-full animate-[progress_1.6s_ease-out_forwards]" />
+            </div>
+
+          </div>
+        </div>
+      )}
+
       {/* Tela inicial */}
       {tela === 'inicio' && (
-        <div className={`h-full ${emTransicao ? 'opacity-0' : 'opacity-100'} transition-opacity duration-200`}>
+        <div className={`h-full transition-all duration-300 ${emTransicao ? 'opacity-0' : saindo ? 'opacity-0 scale-[0.97]' : 'opacity-100 scale-100'}`}>
           <LancadorApps
             aoSelecionarApp={(app) => mudarTela(app as Tela)}
             curiosidadeDiaria={curiosidadeDiaria}
-            aoSair={sair}
+            aoSair={handleSair}
           />
         </div>
       )}
@@ -146,8 +190,8 @@ export default function Inicio() {
 
       {/* Painel dos Pais */}
       {tela === 'pais' && (
-        <div className={`h-full ${emTransicao ? 'opacity-0' : 'opacity-100'} transition-opacity duration-200`}>
-          <PainelPais aoVoltar={sair} />
+        <div className={`h-full transition-all duration-300 ${emTransicao ? 'opacity-0' : saindo ? 'opacity-0 scale-[0.97]' : 'opacity-100 scale-100'}`}>
+          <PainelPais aoVoltar={handleSair} />
         </div>
       )}
     </FrameDispositivo>
