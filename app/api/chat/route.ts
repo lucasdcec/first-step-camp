@@ -35,10 +35,11 @@ async function chamarGroq(pergunta: string) {
       { role: 'system', content: systemPrompt },
       { role: 'user', content: pergunta }
     ],
-    model: 'llama3-8b-8192',
+    model: 'llama-3.1-8b-instant',
     response_format: { type: "json_object" }
   });
   const responseText = chatCompletion.choices[0]?.message?.content || '{}';
+  console.log('Resposta Groq:', responseText);
   return JSON.parse(responseText);
 }
 
@@ -73,9 +74,9 @@ export async function POST(req: Request) {
           respostaIA = await chamarGroq(pergunta);
         }
       } catch (erroSecundario) {
-        console.error(`Erro no provedor secundário (${provedorSecundario}):`, erroSecundario);
+        console.error(`Erro no provedor secundário (${provedorSecundario}):`, JSON.stringify(erroSecundario, null, 2) || erroSecundario);
         return NextResponse.json({
-          resposta: `Oops! Meus dois cérebros artificiais deram uma pequena travada agora.`,
+          resposta: `Oops! Meus dois cérebros artificiais (Principal e Fallback) deram uma pequena travada agora.`,
           curiosidade: '✨ Você sabia que a internet viaja por cabos gigantes no fundo do mar?',
           sugestao: 'Quer tentar novamente?'
         });

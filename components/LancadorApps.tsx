@@ -20,6 +20,7 @@ const APPS = [
   { id: 'historias',icone: '📖', label: 'Histórias',cor: 'from-pink-400 to-rose-600',    sombra: 'shadow-pink-500/30' },
   { id: 'telefone', icone: '📞', label: 'Telefonar',cor: 'from-amber-400 to-orange-500', sombra: 'shadow-amber-500/30' },
   { id: 'missoes',  icone: '🌱', label: 'Missões',  cor: 'from-teal-400 to-cyan-600',    sombra: 'shadow-teal-500/30' },
+  { id: 'voz',      icone: '🗣️', label: 'Modo Voz', cor: 'from-pink-500 to-purple-700', sombra: 'shadow-pink-500/30' },
 ]
 
 const CONQUISTAS = ['🌟 Primeiro Quiz', '🧠 Curioso do Dia', '🌍 Explorador']

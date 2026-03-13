@@ -12,8 +12,9 @@ import ConstrutorHistorias from '@/components/ConstrutorHistorias'
 import TelefoneSeguro from '@/components/TelefoneSeguro'
 import MissoesNatureza from '@/components/MissoesNatureza'
 import PainelPais from '@/components/PainelPais'
+import VozInterface from '../components/VozInterface'
 
-type Tela = 'selecao' | 'boot' | 'boot-pais' | 'inicio' | 'pergunte' | 'explore' | 'quiz' | 'historias' | 'telefone' | 'missoes' | 'pais'
+type Tela = 'selecao' | 'boot' | 'boot-pais' | 'inicio' | 'pergunte' | 'explore' | 'quiz' | 'historias' | 'telefone' | 'missoes' | 'pais' | 'voz'
 
 const CURIOSIDADES_DIARIAS = [
   { pergunta: 'Por que as baleias cantam?', icone: '🐋' },
@@ -231,6 +232,13 @@ export default function Inicio() {
       {tela === 'pais' && (
         <div className={`h-full transition-all duration-300 ${emTransicao ? 'opacity-0' : saindo ? 'opacity-0 scale-[0.97]' : 'opacity-100 scale-100'}`}>
           <PainelPais aoVoltar={handleSair} />
+        </div>
+      )}
+
+      {/* Modo Voz */}
+      {tela === 'voz' && (
+        <div className={`h-full ${emTransicao ? 'opacity-0' : 'opacity-100'} transition-opacity duration-200`}>
+          <VozInterface aoVoltar={() => mudarTela('inicio')} />
         </div>
       )}
     </FrameDispositivo>
