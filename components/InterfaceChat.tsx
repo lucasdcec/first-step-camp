@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useHistoricoChat } from '@/hooks/useHistoricoChat'
 import { useTema } from '@/contexts/ThemeContext'
+import { usePerfil } from '@/contexts/PerfilContext'
 import AvatarIA from './AvatarIA'
 
 interface InterfaceChatProps {
@@ -103,6 +104,7 @@ const suporta_stt = typeof window !== 'undefined' && ('SpeechRecognition' in win
 export default function InterfaceChat({ aoVoltar }: InterfaceChatProps) {
   const { historico, adicionarMensagem } = useHistoricoChat()
   const { temaEscuro } = useTema()
+  const { faixaEtaria } = usePerfil()
   const [mensagens, setMensagens] = useState<Mensagem[]>(
     historico.length > 0
       ? historico.map(m => ({ tipo: m.tipo, texto: m.texto })) as Mensagem[]
@@ -132,7 +134,7 @@ export default function InterfaceChat({ aoVoltar }: InterfaceChatProps) {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pergunta })
+        body: JSON.stringify({ pergunta, faixaEtaria })
       });
       const respostaIA = await res.json();
       
@@ -212,13 +214,36 @@ export default function InterfaceChat({ aoVoltar }: InterfaceChatProps) {
         </button>
       </div>
 
+      {/* Decorações Lúdicas para 7-9 anos */}
+      {faixaEtaria === '7-9' && (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-30">
+          <div className="absolute top-[15%] right-[10%] text-2xl animate-bounce">🎈</div>
+          <div className="absolute bottom-[25%] left-[5%] text-2xl animate-spin-slow">⭐</div>
+          <div className="absolute top-[40%] left-[2%] text-xl opacity-50">☁️</div>
+        </div>
+      )}
+
+      {/* Decorações Tech/Space para 10-12 anos */}
+      {faixaEtaria === '10-12' && (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-20">
+          <div className="absolute top-[10%] left-[5%] text-2xl animate-pulse">🛸</div>
+          <div className="absolute bottom-[20%] right-[10%] text-2xl animate-float-slow">🪐</div>
+          <div className="absolute top-[30%] right-[2%] text-xl">🔭</div>
+          <div className="absolute bottom-[40%] left-[8%] text-xl opacity-40">⚛️</div>
+        </div>
+      )}
+
       {/* Mensagens */}
       <div className={`flex-1 overflow-y-auto p-4 space-y-4 ${bg}`}>
         {mensagens.map((msg, idx) => (
           <div key={idx} className={`animate-slide-up ${msg.tipo === 'usuario' ? 'flex justify-end' : 'flex justify-start'}`}>
             {msg.tipo === 'ia' ? (
               <div className="max-w-xs space-y-2">
-                <div className={`rounded-2xl rounded-tl-sm px-4 py-3 ${temaEscuro ? 'bg-gray-700 text-white' : 'bg-gray-100 text-neutral-900'}`}>
+                <div className={`
+                    px-4 py-3 shadow-sm
+                    ${faixaEtaria === '7-9' ? 'rounded-[2rem] rounded-tl-none border-2 border-violet-100 shadow-violet-200/50' : 'rounded-2xl rounded-tl-sm'}
+                    ${temaEscuro ? 'bg-gray-700 text-white' : 'bg-gray-100 text-neutral-900'}
+                  `}>
                   <p className="text-sm leading-relaxed">{msg.texto}</p>
                 </div>
                 {msg.curiosidade && (
@@ -237,8 +262,13 @@ export default function InterfaceChat({ aoVoltar }: InterfaceChatProps) {
                 )}
               </div>
             ) : (
-              <div className="bg-gradient-to-br from-violet-500 to-purple-600 text-white rounded-2xl rounded-tr-sm px-4 py-3 max-w-xs shadow-md shadow-violet-500/20">
-                <p className="text-sm">{msg.texto}</p>
+              <div className={`
+                  text-white px-4 py-3 max-w-xs shadow-md 
+                  ${faixaEtaria === '7-9' 
+                    ? 'bg-gradient-to-br from-pink-400 via-orange-400 to-yellow-400 rounded-[2.5rem] rounded-tr-none shadow-orange-500/30' 
+                    : 'bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl rounded-tr-sm shadow-violet-500/20'}
+                `}>
+                <p className="text-sm font-bold">{msg.texto}</p>
               </div>
             )}
           </div>

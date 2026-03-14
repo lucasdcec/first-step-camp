@@ -3,10 +3,12 @@
 import { createContext, useContext, useState, ReactNode } from 'react'
 
 type Perfil = 'nenhum' | 'explorador' | 'pais'
+type FaixaEtaria = '7-9' | '10-12' | 'nenhuma'
 
 interface PerfilContextType {
   perfil: Perfil
-  definirPerfil: (p: Perfil) => void
+  faixaEtaria: FaixaEtaria
+  definirPerfil: (p: Perfil, f?: FaixaEtaria) => void
   sair: () => void
 }
 
@@ -14,12 +16,20 @@ const PerfilContext = createContext<PerfilContextType | undefined>(undefined)
 
 export function PerfilProvider({ children }: { children: ReactNode }) {
   const [perfil, setPerfil] = useState<Perfil>('nenhum')
+  const [faixaEtaria, setFaixaEtaria] = useState<FaixaEtaria>('nenhuma')
 
-  const definirPerfil = (p: Perfil) => setPerfil(p)
-  const sair = () => setPerfil('nenhum')
+  const definirPerfil = (p: Perfil, f: FaixaEtaria = 'nenhuma') => {
+    setPerfil(p)
+    setFaixaEtaria(f)
+  }
+
+  const sair = () => {
+    setPerfil('nenhum')
+    setFaixaEtaria('nenhuma')
+  }
 
   return (
-    <PerfilContext.Provider value={{ perfil, definirPerfil, sair }}>
+    <PerfilContext.Provider value={{ perfil, faixaEtaria, definirPerfil, sair }}>
       {children}
     </PerfilContext.Provider>
   )

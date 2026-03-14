@@ -23,24 +23,17 @@ const ESTRELAS = [
 
 export default function TelaSelecaoPerfil() {
   const { definirPerfil } = usePerfil()
-  const [mostraPIN, setMostraPIN] = useState(false)
+  const [passo, setPasso] = useState<'perfil' | 'idade' | 'pin'>('perfil')
   const [pin, setPin] = useState('')
 
-  const entrarComoExplorador = () => {
-    definirPerfil('explorador')
-  }
-
-  const abrirPIN = () => {
-    setMostraPIN(true)
-    setPin('')
+  const escolherIdade = (faixa: '7-9' | '10-12') => {
+    definirPerfil('explorador', faixa)
   }
 
   const digitarPIN = (digito: string) => {
     if (pin.length >= 4) return
     const novoPIN = pin + digito
-
     setPin(novoPIN)
-
     if (novoPIN.length === 4) {
       setTimeout(() => {
         definirPerfil('pais')
@@ -94,16 +87,15 @@ export default function TelaSelecaoPerfil() {
         <p className="text-purple-300 text-xs mt-1">Assistente de Aprendizado IA</p>
       </div>
 
-      {!mostraPIN ? (
+      {passo === 'perfil' && (
         /* Seleção de perfil */
         <div className="flex-1 flex flex-col justify-center px-6 gap-4 relative z-10">
           <p className="text-center text-purple-200 text-sm font-medium mb-2">Quem vai usar agora?</p>
 
           {/* Card Explorador */}
           <button
-            onClick={entrarComoExplorador}
+            onClick={() => setPasso('idade')}
             className="animate-fade-in-up group relative overflow-hidden rounded-3xl p-5 border border-purple-400/30 bg-gradient-to-br from-violet-500/30 to-purple-600/20 backdrop-blur-sm hover:from-violet-500/50 hover:to-purple-600/40 transition-all duration-300 active:scale-95 text-left"
-            style={{ animationDelay: '0.1s' }}
           >
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             <div className="flex items-center gap-4">
@@ -120,9 +112,8 @@ export default function TelaSelecaoPerfil() {
 
           {/* Card Pais */}
           <button
-            onClick={abrirPIN}
+            onClick={() => setPasso('pin')}
             className="animate-fade-in-up group relative overflow-hidden rounded-3xl p-5 border border-blue-400/30 bg-gradient-to-br from-blue-500/20 to-cyan-600/10 backdrop-blur-sm hover:from-blue-500/40 hover:to-cyan-600/30 transition-all duration-300 active:scale-95 text-left"
-            style={{ animationDelay: '0.25s' }}
           >
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             <div className="flex items-center gap-4">
@@ -136,16 +127,53 @@ export default function TelaSelecaoPerfil() {
             </div>
             <div className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-400 text-xl group-hover:translate-x-1 transition-transform">›</div>
           </button>
-
-          <p className="text-center text-purple-400/60 text-xs mt-4">
-            Versão MVP — Bootcamp Unifor 2026
-          </p>
         </div>
-      ) : (
+      )}
+
+      {passo === 'idade' && (
+        <div className="flex-1 flex flex-col justify-center px-6 gap-6 relative z-10 animate-fade-in">
+          <button onClick={() => setPasso('perfil')} className="text-purple-300 text-sm self-start mb-2">‹ Voltar</button>
+          
+          <div className="text-center space-y-1">
+            <h2 className="text-white font-bold text-lg">Qual a sua idade?</h2>
+            <p className="text-purple-300 text-xs">O Primo vai se ajustar para você! ✨</p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4">
+            <button
+              onClick={() => escolherIdade('7-9')}
+              className="group relative overflow-hidden rounded-3xl p-6 border border-emerald-400/30 bg-gradient-to-br from-emerald-500/20 to-teal-600/20 backdrop-blur-sm hover:from-emerald-500/40 hover:to-teal-600/30 transition-all duration-300 active:scale-95"
+            >
+              <div className="flex items-center gap-5">
+                <div className="text-4xl">🐥</div>
+                <div className="text-left">
+                  <p className="text-white font-bold text-lg">7 a 9 anos</p>
+                  <p className="text-emerald-300 text-xs">Aprender brincando com o Primo</p>
+                </div>
+              </div>
+            </button>
+
+            <button
+              onClick={() => escolherIdade('10-12')}
+              className="group relative overflow-hidden rounded-3xl p-6 border border-blue-400/30 bg-gradient-to-br from-blue-500/20 to-indigo-600/20 backdrop-blur-sm hover:from-blue-500/40 hover:to-indigo-600/30 transition-all duration-300 active:scale-95"
+            >
+              <div className="flex items-center gap-5">
+                <div className="text-4xl">🦁</div>
+                <div className="text-left">
+                  <p className="text-white font-bold text-lg">10 a 12 anos</p>
+                  <p className="text-blue-300 text-xs">Desafios e descobertas avançadas</p>
+                </div>
+              </div>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {passo === 'pin' && (
         /* Teclado PIN */
         <div className="flex-1 flex flex-col justify-center px-6 relative z-10">
           <button
-            onClick={() => setMostraPIN(false)}
+            onClick={() => setPasso('perfil')}
             className="self-start text-purple-400 hover:text-white transition-colors text-sm mb-4 flex items-center gap-1"
           >
             ‹ Voltar
@@ -171,8 +199,6 @@ export default function TelaSelecaoPerfil() {
               ))}
             </div>
 
-            <p className="text-purple-400/60 text-xs">💡 Dica para demo: use o PIN <strong className="text-purple-300">1234</strong></p>
-
             {/* Teclado numérico */}
             <div className="grid grid-cols-3 gap-3 w-full max-w-[220px]">
               {tecladoNumerico.flat().map((tecla, idx) => (
@@ -180,7 +206,7 @@ export default function TelaSelecaoPerfil() {
                   key={idx}
                   onClick={() => {
                     if (tecla === '⌫') apagarPIN()
-                    else if (tecla === '✓') {} // auto-validate ao 4 dígitos
+                    else if (tecla === '✓') {}
                     else digitarPIN(tecla)
                   }}
                   className={`

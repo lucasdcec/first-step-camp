@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useTema } from '@/contexts/ThemeContext'
+import { usePerfil } from '@/contexts/PerfilContext'
 import AvatarIA from './AvatarIA'
 
 interface VozInterfaceProps {
@@ -24,12 +25,35 @@ declare const webkitSpeechRecognition: new () => SpeechRecognitionInstance
 
 export default function VozInterface({ aoVoltar }: VozInterfaceProps) {
   const { temaEscuro } = useTema()
+  const { faixaEtaria } = usePerfil()
   const [escutando, setEscutando] = useState(false)
   const [falando, setFalando] = useState(false)
   const [transcricao, setTranscricao] = useState('')
   const [resposta, setResposta] = useState('')
   const [carregando, setCarregando] = useState(false)
   const reconhecimentoRef = useRef<SpeechRecognitionInstance | null>(null)
+
+  // Cores dinâmicas por faixa etária
+  const configIdade = {
+    '7-9': {
+      bgNebulosa: temaEscuro ? 'bg-pink-900/20' : 'bg-pink-100/50',
+      orb: 'from-pink-400 via-orange-400 to-yellow-400',
+      glow: 'shadow-[0_0_80px_rgba(248,113,113,0.4)]',
+      label: '🐥 Pequeno Explorador'
+    },
+    '10-12': {
+      bgNebulosa: temaEscuro ? 'bg-indigo-900/20' : 'bg-blue-100/50',
+      orb: 'from-pink-500 via-purple-600 to-indigo-700',
+      glow: 'shadow-[0_0_80px_rgba(168,85,247,0.4)]',
+      label: '🦁 Jovem Explorador'
+    },
+    'nenhuma': {
+      bgNebulosa: temaEscuro ? 'bg-purple-900/10' : 'bg-violet-100/40',
+      orb: 'from-pink-500 via-purple-600 to-indigo-700',
+      glow: 'shadow-[0_0_80px_rgba(168,85,247,0.4)]',
+      label: 'Explorador'
+    }
+  }[faixaEtaria]
   
   // Efeito da esfera
   const [esferaEscala, setEsferaEscala] = useState(1)
@@ -94,7 +118,7 @@ export default function VozInterface({ aoVoltar }: VozInterfaceProps) {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pergunta })
+        body: JSON.stringify({ pergunta, faixaEtaria })
       })
       const data = await res.json()
       const textoIA = data.resposta || 'Não entendi, pode repetir?'
@@ -113,16 +137,34 @@ export default function VozInterface({ aoVoltar }: VozInterfaceProps) {
     if (!window.speechSynthesis) return
 
     window.speechSynthesis.cancel()
-    const utter = new SpeechSynthesisUtterance(texto)
-    utter.lang = 'pt-BR'
-    utter.rate = 0.9
-    utter.pitch = 1.1
+    
+    // Divide o texto em frases para criar pausas naturais
+    const frases = texto.split(/(?<=[.?!])\s+/)
+    setFalando(true)
 
-    utter.onstart = () => setFalando(true)
-    utter.onend = () => setFalando(false)
-    utter.onerror = () => setFalando(false)
+    let index = 0
+    const falarProximaFrase = () => {
+      if (index >= frases.length) {
+        setFalando(false)
+        return
+      }
 
-    window.speechSynthesis.speak(utter)
+      const utter = new SpeechSynthesisUtterance(frases[index])
+      utter.lang = 'pt-BR'
+      utter.rate = (faixaEtaria === '7-9' ? 0.85 : 0.95) // Mais lento para menores
+      utter.pitch = 1.1
+
+      utter.onend = () => {
+        index++
+        // Pequena pausa natural entre frases (300ms)
+        setTimeout(falarProximaFrase, 300)
+      }
+
+      utter.onerror = () => setFalando(false)
+      window.speechSynthesis.speak(utter)
+    }
+
+    falarProximaFrase()
   }
 
   const resetar = () => {
@@ -137,9 +179,31 @@ export default function VozInterface({ aoVoltar }: VozInterfaceProps) {
   return (
     <div className={`flex flex-col h-full ${temaEscuro ? 'bg-black text-white' : 'bg-slate-50 text-slate-900'} overflow-hidden relative transition-colors duration-500`}>
       
-      {/* Background Decorativo - Nebulosa Suave */}
-      <div className={`absolute top-[-10%] left-[-10%] w-[50%] h-[50%] blur-[120px] rounded-full transition-colors duration-1000 ${temaEscuro ? 'bg-purple-600/10' : 'bg-violet-200/40'}`} />
-      <div className={`absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] blur-[120px] rounded-full transition-colors duration-1000 ${temaEscuro ? 'bg-pink-600/10' : 'bg-pink-200/30'}`} />
+      {/* Background Decorativo Adaptável */}
+      <div className={`absolute top-[-10%] left-[-10%] w-[50%] h-[50%] blur-[120px] rounded-full transition-all duration-1000 ${configIdade.bgNebulosa}`} />
+      <div className={`absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] blur-[120px] rounded-full transition-all duration-1000 ${temaEscuro ? 'bg-indigo-600/10' : 'bg-indigo-200/30'}`} />
+
+      {/* Elementos Lúdicos para 7-9 anos (Bolhas Mágicas) */}
+      {faixaEtaria === '7-9' && (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-[10%] left-[10%] text-4xl animate-bounce opacity-40">🎈</div>
+          <div className="absolute top-[60%] right-[15%] text-4xl animate-float-slow opacity-30">⭐</div>
+          <div className="absolute bottom-[20%] left-[20%] text-3xl animate-pulse opacity-20">🌈</div>
+          <div className="absolute top-[30%] right-[5%] text-2xl animate-bounce opacity-30" style={{ animationDelay: '1s' }}>🍭</div>
+        </div>
+      )}
+
+      {/* Elementos para 10-12 anos (Tecnologia e Espaço) */}
+      {faixaEtaria === '10-12' && (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-[15%] right-[10%] text-3xl opacity-20 animate-pulse">🚀</div>
+          <div className="absolute bottom-[30%] left-[8%] text-3xl opacity-20 animate-float-slow">🪐</div>
+          <div className="absolute top-[50%] right-[5%] text-2xl opacity-15 animate-spin-slow">⚛️</div>
+          {/* Partículas de "Tech" */}
+          <div className="absolute top-[20%] left-[20%] w-1 h-1 bg-blue-400 rounded-full animate-ping opacity-30" />
+          <div className="absolute bottom-[40%] right-[25%] w-1 h-1 bg-purple-400 rounded-full animate-ping opacity-30" style={{ animationDelay: '1.5s' }} />
+        </div>
+      )}
 
       {/* Header */}
       <div className="flex items-center justify-between p-6 z-10">
@@ -147,10 +211,10 @@ export default function VozInterface({ aoVoltar }: VozInterfaceProps) {
           <span className="text-xl">‹</span>
         </button>
         <div className="text-center">
-          <h2 className={`font-bold text-sm tracking-tight ${temaEscuro ? 'text-white' : 'text-slate-800'}`}>Primo — IA Voz</h2>
-          <p className={`text-[10px] ${temaEscuro ? 'text-gray-400' : 'text-slate-500'}`}>Modo Interativo</p>
+          <h2 className={`font-bold text-sm tracking-tight ${temaEscuro ? 'text-white' : 'text-slate-800'}`}>{configIdade.label}</h2>
+          <p className={`text-[10px] ${temaEscuro ? 'text-gray-400' : 'text-slate-500'}`}>Falando com o Primo</p>
         </div>
-        <div className="w-10" /> {/* Spacer */}
+        <div className="w-10" />
       </div>
 
       {/* Área Central: Esfera */}
@@ -174,9 +238,9 @@ export default function VozInterface({ aoVoltar }: VozInterfaceProps) {
             }}
             className={`
               w-36 h-36 sm:w-48 sm:h-48 rounded-full 
-              bg-gradient-to-br from-pink-500 via-purple-600 to-indigo-700
-              shadow-[0_0_40px_rgba(168,85,247,0.3)] sm:shadow-[0_0_80px_rgba(168,85,247,0.4)]
-              transition-transform duration-100 ease-out
+              bg-gradient-to-br ${configIdade.orb}
+              ${configIdade.glow}
+              transition-all duration-100 ease-out
               flex items-center justify-center
               overflow-hidden
               relative
@@ -187,7 +251,11 @@ export default function VozInterface({ aoVoltar }: VozInterfaceProps) {
             
             {/* Avatar do Primo no centro da esfera */}
             <div className={`transition-all duration-500 ${falando ? 'scale-105 sm:scale-110' : 'scale-90 sm:scale-100'}`}>
-              <AvatarIA tamanho={window.innerWidth < 640 ? 'medio' : 'grande'} expressao={falando ? 'feliz' : escutando ? 'pensando' : 'feliz'} />
+              <AvatarIA 
+                tamanho="grande" 
+                expressao={falando ? 'feliz' : escutando ? 'pensando' : 'feliz'} 
+                estaFalando={falando}
+              />
             </div>
 
             {/* Partículas flutuantes internas */}
@@ -198,23 +266,7 @@ export default function VozInterface({ aoVoltar }: VozInterfaceProps) {
           </div>
         </div>
 
-        {/* Texto Dinâmico */}
-        <div className="mt-8 sm:mt-12 text-center max-w-xs sm:max-w-sm px-4 min-h-[60px] sm:min-h-[80px]">
-          {carregando ? (
-            <div className="space-y-2">
-              <p className="text-violet-500 text-xs sm:text-sm italic animate-pulse tracking-wide font-medium">Primo está pensando...</p>
-              <div className="flex justify-center gap-1">
-                {[0,1,2].map(i => (
-                  <div key={i} className="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-violet-500 rounded-full animate-bounce" style={{ animationDelay: `${i*0.1}s` }} />
-                ))}
-              </div>
-            </div>
-          ) : (
-            <p className={`text-lg sm:text-xl font-medium leading-relaxed tracking-tight animate-fade-in ${temaEscuro ? 'text-gray-100' : 'text-slate-800'}`}>
-              {transcricao || resposta || 'Toque no microfone para conversar com o Primo!'}
-            </p>
-          )}
-        </div>
+      <div className="h-4" /> {/* Spacer */}
       </div>
 
       {/* Footer Controls */}
@@ -270,6 +322,20 @@ export default function VozInterface({ aoVoltar }: VozInterfaceProps) {
         }
         .animate-fade-in {
           animation: fade-in 0.4s ease-out forwards;
+        }
+        @keyframes float-slow {
+          0%, 100% { transform: translateY(0) translateX(0); }
+          50% { transform: translateY(-20px) translateX(10px); }
+        }
+        .animate-float-slow {
+          animation: float-slow 4s ease-in-out infinite;
+        }
+        @keyframes spin-slow {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        .animate-spin-slow {
+          animation: spin-slow 8s linear infinite;
         }
       `}</style>
     </div>
