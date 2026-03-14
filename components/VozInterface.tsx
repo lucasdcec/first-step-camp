@@ -103,14 +103,14 @@ export default function VozInterface({ aoVoltar }: VozInterfaceProps) {
   }, [falando])
 
   const iniciarEscuta = () => {
-    if (!('webkitSpeechRecognition' in window)) {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
       alert('Seu navegador não suporta reconhecimento de voz.')
       return
     }
 
     if (escutando) {
       if (reconhecimentoRef.current) {
-        reconhecimentoRef.current.stop() // Stop permite que o que foi falado seja processado
+        reconhecimentoRef.current.stop()
       }
       return
     }
@@ -119,8 +119,8 @@ export default function VozInterface({ aoVoltar }: VozInterfaceProps) {
     window.speechSynthesis.cancel()
     setFalando(false)
     setResposta('')
-    setTranscricao('')
-    transcricaoRef.current = '' // Reseta o ref para a nova frase
+    setTranscricao('...') // Feedback visual imediato
+    transcricaoRef.current = ''
 
     const SR = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition
     const rec = new SR()
@@ -128,10 +128,11 @@ export default function VozInterface({ aoVoltar }: VozInterfaceProps) {
     rec.lang = 'pt-BR'
     rec.interimResults = true
     rec.maxAlternatives = 1
-    rec.continuous = false // Mantemos false para capturar um comando por vez, mas com tratamento melhor
+    rec.continuous = false
 
     rec.onstart = () => {
       setEscutando(true)
+      setTranscricao('Ouvindo...')
       tocarSom('ligar')
     }
 
@@ -144,9 +145,9 @@ export default function VozInterface({ aoVoltar }: VozInterfaceProps) {
       setTranscricao(transcricaoAtual)
       transcricaoRef.current = transcricaoAtual
       
-      const ultimaPredicao = e.results[e.results.length - 1]
-      if (ultimaPredicao.isFinal) {
-        rec.stop() // Para o reconhecimento assim que detectar o fim da frase
+      // Se for o resultado final (pausa longa detectada pelo browser), para e processa
+      if (e.results[e.results.length - 1].isFinal) {
+        rec.stop()
       }
     }
 
@@ -154,19 +155,22 @@ export default function VozInterface({ aoVoltar }: VozInterfaceProps) {
       setEscutando(false)
       tocarSom('desligar')
       
-      // Se tivermos texto capturado, enviamos para a IA no momento em que a escuta termina
-      if (transcricaoRef.current.trim()) {
-        enviarParaIA(transcricaoRef.current)
-        transcricaoRef.current = '' // Limpa o ref para a próxima conversa
+      // Processa o que foi capturado
+      const textoFinal = transcricaoRef.current.trim()
+      if (textoFinal && textoFinal !== 'Ouvindo...') {
+        enviarParaIA(textoFinal)
+      } else {
+        setTranscricao('') // Limpa se não capturou nada
       }
     }
 
     rec.onerror = (e: any) => {
       console.error('Erro no microfone:', e.error)
       if (e.error === 'not-allowed') {
-        alert('Por favor, permita o acesso ao microfone nas configurações do seu navegador.')
+        alert('Por favor, permita o acesso ao microfone.')
       }
       setEscutando(false)
+      setTranscricao('')
       tocarSom('desligar')
     }
 
@@ -181,6 +185,7 @@ export default function VozInterface({ aoVoltar }: VozInterfaceProps) {
 
   const enviarParaIA = async (pergunta: string) => {
     setCarregando(true)
+    setResposta('') // Limpa resposta anterior
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
@@ -188,12 +193,17 @@ export default function VozInterface({ aoVoltar }: VozInterfaceProps) {
         body: JSON.stringify({ pergunta, faixaEtaria })
       })
       const data = await res.json()
-      const textoIA = data.resposta || 'Não entendi, pode repetir?'
       
-      falarIA(textoIA)
+      if (data.resposta) {
+        falarIA(data.resposta)
+      } else {
+        throw new Error('Resposta vazia da IA')
+      }
     } catch (err) {
       console.error(err)
-      setResposta('Tive um problema de rede, amiguinho.')
+      const msgErro = 'Tive um probleminha de rede, amiguinho. Pode tentar de novo?'
+      setResposta(msgErro)
+      falarIA(msgErro)
     } finally {
       setCarregando(false)
     }
@@ -207,7 +217,8 @@ export default function VozInterface({ aoVoltar }: VozInterfaceProps) {
     // Divide o texto em frases para sincronizar o balão
     const frases = texto.split(/(?<=[.?!])\s+/)
     setFalando(true)
-    setTranscricao('') // Limpa a voz do usuário para dar lugar à resposta do Primo
+    // Não limpamos a transcrição aqui imediatamente para o balão não sumir
+    // setTranscricao('') 
 
     let index = 0
     const falarProximaFrase = () => {
@@ -216,29 +227,53 @@ export default function VozInterface({ aoVoltar }: VozInterfaceProps) {
         return
       }
 
-      // Atualiza o que aparece no balão para a frase ATUAL
+      // Quando começar a primeira frase, aí sim limpamos a transcrição do usuário
+      if (index === 0) setTranscricao('')
+      
       setResposta(frases[index])
 
       const utter = new SpeechSynthesisUtterance(frases[index])
       utter.lang = 'pt-BR'
-      utter.rate = (faixaEtaria === '7-9' ? 0.85 : 0.95)
+      
+      // Tenta encontrar uma voz em português mais amigável
+      const vozes = window.speechSynthesis.getVoices()
+      const vozPT = vozes.find(v => v.lang.includes('pt-BR') && v.name.includes('Google')) || 
+                    vozes.find(v => v.lang.includes('pt-BR'))
+      if (vozPT) utter.voice = vozPT
+
+      utter.rate = (faixaEtaria === '7-9' ? 0.9 : 1.0)
       utter.pitch = 1.1
+
+      utter.onstart = () => {
+        setFalando(true)
+      }
 
       utter.onend = () => {
         index++
-        // Pequena pausa natural no balão antes da próxima frase
-        setTimeout(falarProximaFrase, 400)
+        setTimeout(falarProximaFrase, 300)
       }
 
-      utter.onerror = () => setFalando(false)
+      utter.onerror = (e) => {
+        console.error('Erro na síntese de voz:', e)
+        setFalando(false)
+      }
+      
       window.speechSynthesis.speak(utter)
     }
 
-    falarProximaFrase()
+    // Algumas vezes as vozes demoram a carregar
+    if (window.speechSynthesis.getVoices().length === 0) {
+      window.speechSynthesis.addEventListener('voiceschanged', () => falarProximaFrase(), { once: true })
+    } else {
+      falarProximaFrase()
+    }
   }
 
   const resetar = () => {
     window.speechSynthesis.cancel()
+    if (reconhecimentoRef.current) {
+      reconhecimentoRef.current.abort()
+    }
     setFalando(false)
     setEscutando(false)
     setTranscricao('')
