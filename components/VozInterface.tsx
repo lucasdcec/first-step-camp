@@ -13,12 +13,15 @@ interface VozInterfaceProps {
 type SpeechRecognitionInstance = {
   lang: string
   interimResults: boolean
+  continuous: boolean
   maxAlternatives: number
   start: () => void
   stop: () => void
+  abort: () => void
   onresult: ((e: any) => void) | null
   onerror: ((e: any) => void) | null
   onend: (() => void) | null
+  onstart: (() => void) | null
 }
 
 declare const webkitSpeechRecognition: new () => SpeechRecognitionInstance
@@ -32,6 +35,7 @@ export default function VozInterface({ aoVoltar }: VozInterfaceProps) {
   const [resposta, setResposta] = useState('')
   const [carregando, setCarregando] = useState(false)
   const reconhecimentoRef = useRef<SpeechRecognitionInstance | null>(null)
+  const transcricaoRef = useRef('') // Ref para capturar o texto mais recente de forma síncrona
 
   // Cores dinâmicas por faixa etária
   const configIdade = {
@@ -105,7 +109,9 @@ export default function VozInterface({ aoVoltar }: VozInterfaceProps) {
     }
 
     if (escutando) {
-      reconhecimentoRef.current?.stop()
+      if (reconhecimentoRef.current) {
+        reconhecimentoRef.current.stop() // Stop permite que o que foi falado seja processado
+      }
       return
     }
 
@@ -114,6 +120,7 @@ export default function VozInterface({ aoVoltar }: VozInterfaceProps) {
     setFalando(false)
     setResposta('')
     setTranscricao('')
+    transcricaoRef.current = '' // Reseta o ref para a nova frase
 
     const SR = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition
     const rec = new SR()
@@ -129,20 +136,29 @@ export default function VozInterface({ aoVoltar }: VozInterfaceProps) {
     }
 
     rec.onresult = (e: any) => {
-      const current = e.results[e.results.length - 1]
-      const text = current[0].transcript
-      setTranscricao(text)
+      let transcricaoAtual = ''
+      for (let i = 0; i < e.results.length; i++) {
+        transcricaoAtual += e.results[i][0].transcript
+      }
       
-      if (current.isFinal) {
-        // Quando é final, paramos o reconhecimento explicitamente para evitar bugs de reinício
-        rec.stop()
-        enviarParaIA(text)
+      setTranscricao(transcricaoAtual)
+      transcricaoRef.current = transcricaoAtual
+      
+      const ultimaPredicao = e.results[e.results.length - 1]
+      if (ultimaPredicao.isFinal) {
+        rec.stop() // Para o reconhecimento assim que detectar o fim da frase
       }
     }
 
     rec.onend = () => {
       setEscutando(false)
       tocarSom('desligar')
+      
+      // Se tivermos texto capturado, enviamos para a IA no momento em que a escuta termina
+      if (transcricaoRef.current.trim()) {
+        enviarParaIA(transcricaoRef.current)
+        transcricaoRef.current = '' // Limpa o ref para a próxima conversa
+      }
     }
 
     rec.onerror = (e: any) => {
