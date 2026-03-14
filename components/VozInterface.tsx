@@ -106,41 +106,61 @@ export default function VozInterface({ aoVoltar }: VozInterfaceProps) {
 
     if (escutando) {
       reconhecimentoRef.current?.stop()
-      tocarSom('desligar')
       return
     }
 
-    tocarSom('ligar')
-    const SR = webkitSpeechRecognition
+    // Cancela qualquer fala da IA antes de começar a ouvir
+    window.speechSynthesis.cancel()
+    setFalando(false)
+    setResposta('')
+    setTranscricao('')
+
+    const SR = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition
     const rec = new SR()
+    
     rec.lang = 'pt-BR'
     rec.interimResults = true
     rec.maxAlternatives = 1
+    rec.continuous = false // Mantemos false para capturar um comando por vez, mas com tratamento melhor
+
+    rec.onstart = () => {
+      setEscutando(true)
+      tocarSom('ligar')
+    }
 
     rec.onresult = (e: any) => {
       const current = e.results[e.results.length - 1]
       const text = current[0].transcript
       setTranscricao(text)
+      
       if (current.isFinal) {
+        // Quando é final, paramos o reconhecimento explicitamente para evitar bugs de reinício
+        rec.stop()
         enviarParaIA(text)
       }
     }
 
     rec.onend = () => {
       setEscutando(false)
+      tocarSom('desligar')
     }
 
     rec.onerror = (e: any) => {
-      console.error('Erro no microfone:', e)
+      console.error('Erro no microfone:', e.error)
+      if (e.error === 'not-allowed') {
+        alert('Por favor, permita o acesso ao microfone nas configurações do seu navegador.')
+      }
       setEscutando(false)
+      tocarSom('desligar')
     }
 
-    reconhecimentoRef.current = rec
-    rec.start()
-    setEscutando(true)
-    setResposta('')
-    setFalando(false)
-    window.speechSynthesis.cancel()
+    try {
+      reconhecimentoRef.current = rec
+      rec.start()
+    } catch (err) {
+      console.error('Erro ao iniciar reconhecimento:', err)
+      setEscutando(false)
+    }
   }
 
   const enviarParaIA = async (pergunta: string) => {
