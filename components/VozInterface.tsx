@@ -123,7 +123,6 @@ export default function VozInterface({ aoVoltar }: VozInterfaceProps) {
       const data = await res.json()
       const textoIA = data.resposta || 'Não entendi, pode repetir?'
       
-      setResposta(textoIA)
       falarIA(textoIA)
     } catch (err) {
       console.error(err)
@@ -138,9 +137,10 @@ export default function VozInterface({ aoVoltar }: VozInterfaceProps) {
 
     window.speechSynthesis.cancel()
     
-    // Divide o texto em frases para criar pausas naturais
+    // Divide o texto em frases para sincronizar o balão
     const frases = texto.split(/(?<=[.?!])\s+/)
     setFalando(true)
+    setTranscricao('') // Limpa a voz do usuário para dar lugar à resposta do Primo
 
     let index = 0
     const falarProximaFrase = () => {
@@ -149,15 +149,18 @@ export default function VozInterface({ aoVoltar }: VozInterfaceProps) {
         return
       }
 
+      // Atualiza o que aparece no balão para a frase ATUAL
+      setResposta(frases[index])
+
       const utter = new SpeechSynthesisUtterance(frases[index])
       utter.lang = 'pt-BR'
-      utter.rate = (faixaEtaria === '7-9' ? 0.85 : 0.95) // Mais lento para menores
+      utter.rate = (faixaEtaria === '7-9' ? 0.85 : 0.95)
       utter.pitch = 1.1
 
       utter.onend = () => {
         index++
-        // Pequena pausa natural entre frases (300ms)
-        setTimeout(falarProximaFrase, 300)
+        // Pequena pausa natural no balão antes da próxima frase
+        setTimeout(falarProximaFrase, 400)
       }
 
       utter.onerror = () => setFalando(false)
