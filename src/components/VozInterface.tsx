@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useTema } from '@/contexts/ThemeContext'
 import { usePerfil } from '@/contexts/PerfilContext'
 import AvatarIA from './AvatarIA'
+import { enviarPerguntaIA } from '@/services/aiService'
 
 interface VozInterfaceProps {
   aoVoltar: () => void
@@ -187,12 +188,7 @@ export default function VozInterface({ aoVoltar }: VozInterfaceProps) {
     setCarregando(true)
     setResposta('') // Limpa resposta anterior
     try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pergunta, faixaEtaria })
-      })
-      const data = await res.json()
+      const data = await enviarPerguntaIA(pergunta, faixaEtaria);
       
       if (data.resposta) {
         falarIA(data.resposta)
@@ -454,30 +450,7 @@ export default function VozInterface({ aoVoltar }: VozInterfaceProps) {
 
       </div>
 
-      {/* CSS extra para animações */}
-      <style jsx>{`
-        @keyframes fade-in {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in {
-          animation: fade-in 0.4s ease-out forwards;
-        }
-        @keyframes float-slow {
-          0%, 100% { transform: translateY(0) translateX(0); }
-          50% { transform: translateY(-20px) translateX(10px); }
-        }
-        .animate-float-slow {
-          animation: float-slow 4s ease-in-out infinite;
-        }
-        @keyframes spin-slow {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        .animate-spin-slow {
-          animation: spin-slow 8s linear infinite;
-        }
-      `}</style>
+
     </div>
   )
 }

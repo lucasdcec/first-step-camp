@@ -4,27 +4,27 @@
   "description": "Primeiro Passo - Assistente de Aprendizado IA para Crianças",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "type-check": "tsc --noEmit"
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "groq-sdk": "^1.1.1",
-    "next": "^14.2.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "typescript": "^5.4.2"
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
     "@types/react": "^18.2.48",
     "@types/react-dom": "^18.2.18",
+    "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.17",
     "postcss": "^8.4.33",
-    "tailwindcss": "^3.4.1"
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.4.2",
+    "vite": "^5.2.0",
+    "vite-plugin-static-copy": "^3.3.0"
   },
   "engines": {
     "node": ">=18.0.0"

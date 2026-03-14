@@ -109,15 +109,7 @@ export default function AvatarIA({
       {/* Brilho da "Vida" */}
       <div className={`absolute inset-0 rounded-full border-2 border-white/30 ${animado ? 'animate-pulse' : ''}`} />
 
-      <style jsx>{`
-        @keyframes talk {
-          0%, 100% { height: 2px; }
-          50% { height: 10px; border-radius: 50%; }
-        }
-        .animate-talk {
-          animation: talk 0.2s ease-in-out infinite;
-        }
-      `}</style>
+
     </div>
   )
 }

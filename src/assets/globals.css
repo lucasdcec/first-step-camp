@@ -180,3 +180,38 @@ html.dark ::-webkit-scrollbar-thumb:hover {
 .animate-slide-in-left {
   animation: slideInLeft 0.25s ease-out forwards;
 }
+
+/* Animações do Modo Voz */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fade-in 0.4s ease-out forwards;
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0) translateX(0); }
+  50% { transform: translateY(-20px) translateX(10px); }
+}
+.animate-float-slow {
+  animation: float-slow 4s ease-in-out infinite;
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
+}
+
+@keyframes talk {
+  0%, 100% { height: 2px; }
+  50% { height: 10px; border-radius: 50%; }
+}
+.animate-talk {
+  animation: talk 0.2s ease-in-out infinite;
+}
+
+

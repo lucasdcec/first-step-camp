@@ -1,5 +1,3 @@
-'use client'
-
 import { useState, useEffect } from 'react'
 import { usePerfil } from '@/contexts/PerfilContext'
 import FrameDispositivo from '@/components/FrameDispositivo'
@@ -12,7 +10,7 @@ import ConstrutorHistorias from '@/components/ConstrutorHistorias'
 import TelefoneSeguro from '@/components/TelefoneSeguro'
 import MissoesNatureza from '@/components/MissoesNatureza'
 import PainelPais from '@/components/PainelPais'
-import VozInterface from '../components/VozInterface'
+import VozInterface from '@/components/VozInterface'
 
 type Tela = 'selecao' | 'boot' | 'boot-pais' | 'inicio' | 'pergunte' | 'explore' | 'quiz' | 'historias' | 'telefone' | 'missoes' | 'pais' | 'voz'
 
@@ -31,7 +29,7 @@ const BOOT_MSGS = [
   'Pronto para explorar! 🚀',
 ]
 
-export default function Inicio() {
+export default function App() {
   const { perfil, sair } = usePerfil()
   const [tela, setTela] = useState<Tela>('selecao')
   const [emTransicao, setEmTransicao] = useState(false)
