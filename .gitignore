@@ -51,3 +51,7 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+
+#git revert HEAD~5..HEAD
+#git reset --soft HEAD~5
+#git log --oneline -n 10

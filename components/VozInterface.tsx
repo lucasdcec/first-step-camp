@@ -334,7 +334,42 @@ export default function VozInterface({ aoVoltar }: VozInterfaceProps) {
                 <div className="absolute bottom-1/3 right-1/4 w-1 h-1 bg-pink-200 rounded-full animate-bounce delay-75" />
             </div>
           </div>
+
+          {/* BALÃO DE FALA (Speech Bubble) */}
+          {(resposta || transcricao || carregando) && (
+            <div className={`
+              absolute z-20 transition-all duration-500 animate-fade-in
+              bottom-[115%] sm:bottom-auto sm:left-[110%] sm:top-0
+              w-[220px] sm:w-[280px]
+            `}>
+              <div className={`
+                relative p-4 rounded-3xl shadow-2xl border-2
+                ${temaEscuro ? 'bg-gray-800 border-indigo-500/30 text-white' : 'bg-white border-violet-100 text-slate-800'}
+              `}>
+                {carregando ? (
+                  <div className="flex gap-1 py-1">
+                    {[0,1,2].map(i => (
+                      <div key={i} className="w-1.5 h-1.5 bg-violet-500 rounded-full animate-bounce" style={{ animationDelay: `${i*0.1}s` }} />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm sm:text-base font-medium leading-relaxed">
+                    {transcricao || resposta}
+                  </p>
+                )}
+                
+                {/* Triângulo do Balão (Mobile: Embaixo | Desktop: Lado) */}
+                <div className={`
+                  absolute w-4 h-4 rotate-45 border-2 border-t-0 border-l-0
+                  ${temaEscuro ? 'bg-gray-800 border-indigo-500/30' : 'bg-white border-violet-100'}
+                  bottom-[-9px] left-1/2 -translate-x-1/2 
+                  sm:bottom-auto sm:left-[-9px] sm:top-1/2 sm:-translate-y-1/2
+                `} />
+              </div>
+            </div>
+          )}
         </div>
+
 
       <div className="h-4" /> {/* Spacer */}
       </div>
