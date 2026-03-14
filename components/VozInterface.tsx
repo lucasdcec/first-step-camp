@@ -55,8 +55,37 @@ export default function VozInterface({ aoVoltar }: VozInterfaceProps) {
     }
   }[faixaEtaria]
   
-  // Efeito da esfera
   const [esferaEscala, setEsferaEscala] = useState(1)
+
+  // Função pra gerar sons sintéticos
+  const tocarSom = (tipo: 'ligar' | 'desligar') => {
+    if (typeof window === 'undefined') return
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)()
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+
+    osc.connect(gain)
+    gain.connect(ctx.destination)
+
+    if (tipo === 'ligar') {
+      // Som de "subida" (Blip alegre)
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(440, ctx.currentTime)
+      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.1)
+      gain.gain.setValueAtTime(0.1, ctx.currentTime)
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1)
+    } else {
+      // Som de "descida" (Pop suave)
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(660, ctx.currentTime)
+      osc.frequency.exponentialRampToValueAtTime(220, ctx.currentTime + 0.1)
+      gain.gain.setValueAtTime(0.1, ctx.currentTime)
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1)
+    }
+
+    osc.start()
+    osc.stop(ctx.currentTime + 0.1)
+  }
 
   useEffect(() => {
     if (falando) {
@@ -77,9 +106,11 @@ export default function VozInterface({ aoVoltar }: VozInterfaceProps) {
 
     if (escutando) {
       reconhecimentoRef.current?.stop()
+      tocarSom('desligar')
       return
     }
 
+    tocarSom('ligar')
     const SR = webkitSpeechRecognition
     const rec = new SR()
     rec.lang = 'pt-BR'
