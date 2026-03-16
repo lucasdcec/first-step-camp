@@ -9,8 +9,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 // Configurações (Substitua pelas suas chaves ou use um .env)
-$GEMINI_API_KEY = getenv('GEMINI_API_KEY') ?: 'SUA_CHAVE_AQUI';
-$GROQ_API_KEY = getenv('GROQ_API_KEY') ?: 'SUA_CHAVE_AQUI';
+$GEMINI_API_KEY = getenv('GEMINI_API_KEY') ?: 'AIzaSyASXLMKAJ9_8bb5Ph_bRFEM_im0H2y5-Vc';
+$GROQ_API_KEY = getenv('GROQ_API_KEY') ?: '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';
 $PRIMARY_AI_PROVIDER = getenv('PRIMARY_AI_PROVIDER') ?: 'gemini';
 
 $input = json_decode(file_get_contents('php://input'), true);
@@ -43,7 +43,7 @@ function gerarSystemPrompt($faixaEtaria) {
 }
 
 function chamarGemini($pergunta, $faixaEtaria, $apiKey) {
-    $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=$apiKey";
+    $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey";
     
     $data = [
         "contents" => [
@@ -123,9 +123,9 @@ try {
         }
     }
 } catch (Exception $e) {
-    http_response_code(500);
+    // Não envia erro 500 para evitar o catch do frontend, envia o erro no JSON
     echo json_encode([
-        'resposta' => 'Nossa, meu cérebro de computador deu uma travada total! Que tal tentar perguntar de novo?',
+        'resposta' => 'Nossa, meu cérebro de computador deu uma travada total! Erro: ' . $e->getMessage(),
         'curiosidade' => '✨ Até os computadores precisam de um tempinho para pensar às vezes.',
         'sugestao' => 'Tentar perguntar novamente?'
     ]);
